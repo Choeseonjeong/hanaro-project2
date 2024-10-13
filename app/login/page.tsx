@@ -1,0 +1,52 @@
+"use client";
+
+import { signIn } from "next-auth/react";
+import {useRouter} from "next/navigation"
+
+export default function LoginPage() {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6">로그인</h1>
+        <form>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">이메일</label>
+            <input
+              type="email"
+              placeholder="your-email@example.com"
+              className="w-full px-4 py-2 border rounded-md"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">비밀번호</label>
+            <input
+              type="password"
+              placeholder="비밀번호를 입력하세요"
+              className="w-full px-4 py-2 border rounded-md"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+          >
+            로그인
+          </button>
+        </form>
+        <div className="mt-4">
+          <button
+            className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-md flex justify-center items-center hover:bg-gray-100"
+            onClick={() => signIn("google", { callbackUrl: "/" })}
+          >
+            Sign in with Google
+          </button>
+          <button
+            className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-md flex justify-center items-center mt-2 hover:bg-gray-100"
+            onClick={() => signIn("github", { callbackUrl: "/" })}
+          >
+            Sign in with GitHub
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

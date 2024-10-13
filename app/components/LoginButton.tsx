@@ -1,9 +1,15 @@
 "use client";
 
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginButton() {
   const { data: session } = useSession();
+  const router = useRouter();
+
+  const handleLoginPage = () => {
+    router.push("/login");
+  };
 
   if (session) {
     return (
@@ -16,8 +22,7 @@ export default function LoginButton() {
 
   return (
     <>
-      <button onClick={() => signIn('google')}>Sign in with Google</button>
-      <button onClick={() => signIn('github')}>Sign in with GitHub</button>
+      <button onClick={handleLoginPage}>로그인</button>
     </>
   );
 }

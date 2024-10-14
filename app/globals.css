@@ -17,14 +17,10 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: sans-serif;
+  @apply font-serif;
 }
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-}
-body {
-  @apply font-sans;
 }

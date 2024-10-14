@@ -33,7 +33,7 @@ export default function Header() {
         </button>
         <div>
           <button
-            className="mr-4 text-gray-500 px-4 py-2 "
+            className="mr-4 text-gray-500 px-4 py-2 font-bold hover:text-my-color2"
             onClick={handleAddRecipe}
           >
             레시피 추가

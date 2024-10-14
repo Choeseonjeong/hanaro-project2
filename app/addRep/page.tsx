@@ -59,10 +59,18 @@ export default function RepForm() {
   };
 
   return (
-    <>
-      <section className="p-8 max-w-xl mx-auto ">
+    <div
+      className="bg-no-repeat"
+      style={{
+        backgroundImage: `url('/images/start1.jpg')`,
+        backgroundSize: "100% auto",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <section className="p-8 max-w-xl mx-auto min-h-screen flex flex-col bg-white">
         <Header />
-        <div className="bg-my-color p-5 rounded-3xl">
+        <div className="flex-grow mt-8">
           <h2 className="text-xl mb-4 font-bold">Add Recipe</h2>
 
           {/* Title */}
@@ -183,13 +191,13 @@ export default function RepForm() {
           <button
             type="submit"
             onClick={handleSubmit}
-            className="w-full bg-my-color2 text-white hover:text-black px-4 py-2 rounded-lg mt-5"
+            className="w-full bg-my-color2 font-bold text-white hover:text-black px-4 py-2 rounded-lg"
           >
             레시피 저장
           </button>
         </div>
+        <Footer />
       </section>
-      <Footer />
-    </>
+    </div>
   );
 }

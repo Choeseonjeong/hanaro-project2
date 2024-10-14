@@ -2,18 +2,19 @@
 import { useState, useEffect } from "react";
 import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
-import Link from 'next/link';
 
 export default function Home() {
-  const [recipes, setRecipes] = useState<{ title: string; tags: string[] }[]>([]);
+  const [recipes, setRecipes] = useState<{ title: string; tags: string[] }[]>(
+    []
+  );
 
   useEffect(() => {
-    const storedRecipe = localStorage.getItem('newRecipe');
+    const storedRecipe = localStorage.getItem("newRecipe");
     if (storedRecipe) {
       const newRecipe = JSON.parse(storedRecipe);
       setRecipes((prevRecipes) => [...prevRecipes, newRecipe]);
 
-      localStorage.removeItem('newRecipe');
+      localStorage.removeItem("newRecipe");
     }
   }, []);
 
@@ -21,7 +22,7 @@ export default function Home() {
     <div className="p-8 max-w-xl mx-auto">
       <Header />
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">레시피 목록</h2>
+        <h2 className="text-2xl font-bold mb-4">List</h2>
         {recipes.length === 0 ? (
           <p className="text-gray-500">추가된 레시피가 없습니다.</p>
         ) : (

@@ -16,14 +16,24 @@ export default function Header() {
       router.push("/addRep");
     }
   };
+  const handleMain = () => {
+    if (isClient) {
+      router.push("/");
+    }
+  };
 
   return (
     <>
-      <header className="flex justify-between items-center bg-my-color p-4 text-black">
-        <h1 className="text-lg font-bold">나만의 레시피</h1>
+      <header className="flex justify-between items-center p-4">
+        <button
+          className="text-4xl font-bold font-serif text-black"
+          onClick={handleMain}
+        >
+          My Recipe
+        </button>
         <div>
           <button
-            className="mr-4 bg-blue-500 text-white px-4 py-2 rounded"
+            className="mr-4 text-gray-500 px-4 py-2 "
             onClick={handleAddRecipe}
           >
             레시피 추가

@@ -22,7 +22,9 @@ export default function LoginButton() {
 
   return (
     <>
-      <button onClick={handleLoginPage}>로그인</button>
+      <button className="text-my-color2" onClick={handleLoginPage}>
+        로그인
+      </button>
     </>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
@@ -9,7 +8,9 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">로그인</h1>
+        <h1 className="text-4xl font-bold mb-6 grid place-items-center">
+          Login
+        </h1>
         <form>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">이메일</label>
@@ -29,7 +30,7 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+            className="w-full bg-my-color text-white py-2 rounded-md hover:bg-my-color2"
           >
             로그인
           </button>

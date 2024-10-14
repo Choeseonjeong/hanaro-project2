@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
-import LoginButton from "./components/LoginButton";
+import LoginButton from "./components/ui/LoginButton";
+import Header from "./components/layout/header"
+import Footer from "./components/layout/footer"
 
 export default function Home() {
   const [title, setTitle] = useState("");
@@ -10,16 +12,7 @@ export default function Home() {
 
   return (
     <div className="p-8 max-w-xl mx-auto">
-      <header className="flex justify-between items-center bg-green-500 p-4 text-white">
-        <h1 className="text-lg font-bold">나만의 레시피</h1>
-        <div>
-          <button className="mr-4 bg-blue-500 text-white px-4 py-2 rounded">
-            레시피 추가
-          </button>
-          <LoginButton/>
-        </div>
-      </header>
-
+      <Header/>
       <section className="mt-6">
         <h2 className="text-xl mb-4">새 레시피 추가</h2>
 
@@ -80,6 +73,7 @@ export default function Home() {
           레시피 저장
         </button>
       </section>
+      <Footer/>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import {useRouter} from "next/navigation"
+import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
@@ -39,15 +39,15 @@ export default function LoginPage() {
             className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-md flex justify-center items-center hover:bg-gray-100"
             onClick={() => signIn("google", { callbackUrl: "/" })}
           >
-            <FcGoogle/>&nbsp;
-            Sign in with Google
+            <FcGoogle />
+            &nbsp; Sign in with Google
           </button>
           <button
             className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-md flex justify-center items-center mt-2 hover:bg-gray-100"
             onClick={() => signIn("github", { callbackUrl: "/" })}
           >
-            <FaGithub />&nbsp;
-            Sign in with GitHub
+            <FaGithub />
+            &nbsp; Sign in with GitHub
           </button>
         </div>
       </div>

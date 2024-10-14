@@ -13,7 +13,7 @@ export default function Header() {
 
     const handleAddRecipe = () => {
         if (isClient) {
-            router.push('/RepForm');
+            router.push('/addRep');
         }
     };
 

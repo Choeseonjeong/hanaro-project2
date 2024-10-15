@@ -157,7 +157,6 @@ export default function EditRep() {
       }}
     >
       <section className="p-8 max-w-xl mx-auto min-h-screen flex flex-col bg-white">
-        <Header />
         <div className="flex-grow mt-8">
           <h2 className="text-xl mb-4 font-bold">Edit Recipe</h2>
 

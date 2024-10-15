@@ -4,30 +4,33 @@ import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
 import RecipeAdd from "./components/layout/RecipeAdd";
 import RecipeDetails from "./components/layout/RecipeDetail";
+import RecipeEditForm from "./components/layout/RecipeEdit";
 
-export default function Home() {
-  const [recipes, setRecipes] = useState<
-    {
-      id: string;
-      title: string;
-      tags: string[];
-      ingredients?: string[];
-      processes?: string[];
-      version?: number;
-      activeVersion?: boolean;
-    }[]
-  >([]);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isAddingRecipe, setIsAddingRecipe] = useState<boolean>(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<null | {
-    id: string;
+interface Recipe {
+  id: number;
+  title: string;
+  tags: string[];
+  ingredients: string[];
+  processes: string[];
+  version: number;
+  versionHistory: {
+    version: number;
+    timestamp: string;
     title: string;
     tags: string[];
-    ingredients?: string[];
-    processes?: string[];
-    version?: number;
-    versionHistory?: any[];
-  }>(null);
+    ingredients: string[];
+    processes: string[];
+    activeVersion?: boolean;
+  }[];
+}
+
+export default function Home() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAddingRecipe, setIsAddingRecipe] = useState<boolean>(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [isEditingRecipe, setIsEditingRecipe] = useState<boolean>(false);
+  const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
     const storedUserEmail = localStorage.getItem("loggedInUser");
@@ -36,16 +39,16 @@ export default function Home() {
 
       const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
       if (storedRecipes) {
-        const allRecipes = JSON.parse(storedRecipes);
+        const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
-        const activeRecipes = allRecipes.map((recipe: any) => {
+        const activeRecipes = allRecipes.map((recipe) => {
           const versionHistory = JSON.parse(
             localStorage.getItem(`versionHistory_${recipe.id}`) || "[]"
           );
           const activeVersion = versionHistory.find(
             (ver: any) => ver.activeVersion
           );
-          return activeVersion || recipe;
+          return activeVersion ? { ...recipe, ...activeVersion } : recipe;
         });
 
         setRecipes(activeRecipes);
@@ -53,7 +56,7 @@ export default function Home() {
     }
   }, []);
 
-  const handleMore = (recipeId: string) => {
+  const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
       setSelectedRecipe(recipe);
@@ -66,9 +69,14 @@ export default function Home() {
     ingredients: string[];
     processes: string[];
   }) => {
-    const updatedRecipes = [
+    const updatedRecipes: Recipe[] = [
       ...recipes,
-      { id: Date.now().toString(), ...newRecipe },
+      {
+        id: Date.now(),
+        ...newRecipe,
+        version: 1,
+        versionHistory: [],
+      },
     ];
     setRecipes(updatedRecipes);
     localStorage.setItem(
@@ -76,6 +84,51 @@ export default function Home() {
       JSON.stringify(updatedRecipes)
     );
     setIsAddingRecipe(false);
+  };
+
+  const handleEditRecipe = (recipeId: number) => {
+    const recipeToEdit = recipes.find((r) => r.id === recipeId);
+    if (recipeToEdit) {
+      setEditedRecipe(recipeToEdit);
+      setIsEditingRecipe(true);
+    }
+  };
+
+  const handleSaveEditedRecipe = (updatedRecipe: Recipe) => {
+    const updatedRecipes = recipes.map((recipe) =>
+      recipe.id === updatedRecipe.id ? updatedRecipe : recipe
+    );
+    setRecipes(updatedRecipes);
+    localStorage.setItem(
+      `recipes_${userEmail}`,
+      JSON.stringify(updatedRecipes)
+    );
+    setIsEditingRecipe(false);
+    setSelectedRecipe(null);
+  };
+
+  const handleRestoreVersion = (recipeId: number, version: any) => {
+    const updatedRecipes = recipes.map((recipe) => {
+      if (recipe.id === recipeId) {
+        const restoredRecipe: Recipe = {
+          ...recipe,
+          title: version.title,
+          tags: version.tags,
+          ingredients: version.ingredients,
+          processes: version.processes,
+          version: version.version,
+        };
+        return restoredRecipe;
+      }
+      return recipe;
+    });
+
+    setRecipes(updatedRecipes);
+    localStorage.setItem(
+      `recipes_${userEmail}`,
+      JSON.stringify(updatedRecipes)
+    );
+    setSelectedRecipe(null);
   };
 
   return (
@@ -93,23 +146,24 @@ export default function Home() {
         <div className="flex-grow mt-8">
           {isAddingRecipe ? (
             <RecipeAdd onAddRecipe={handleAddRecipe} />
+          ) : isEditingRecipe && editedRecipe ? (
+            <RecipeEditForm
+              editedRecipe={editedRecipe}
+              setEditedRecipe={
+                setEditedRecipe as React.Dispatch<React.SetStateAction<Recipe>>
+              }
+              onSaveChanges={handleSaveEditedRecipe}
+              onClose={() => {
+                setIsEditingRecipe(false);
+                setEditedRecipe(null);
+              }}
+            />
           ) : selectedRecipe ? (
-            <div className="bg-white rounded-lg p-6 w-full">
+            <div className="bg-white rounded-lg p-6 shadow-lg w-full">
               <RecipeDetails
-                recipe={{
-                  id: parseInt(selectedRecipe.id, 10),
-                  title: selectedRecipe.title,
-                  tags: selectedRecipe.tags,
-                  ingredients: selectedRecipe.ingredients || [],
-                  processes: selectedRecipe.processes || [],
-                  version: selectedRecipe.version || 1,
-                  versionHistory: selectedRecipe.versionHistory || [],
-                }}
-                onEdit={(recipeId) => {
-                  // Logic to handle edit
-                }}
+                recipe={selectedRecipe}
                 onRestore={(recipeId, version) => {
-                  // Logic to handle version restore
+                  handleRestoreVersion(recipeId, version);
                 }}
                 onClose={() => setSelectedRecipe(null)}
               />
@@ -131,7 +185,7 @@ export default function Home() {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {recipes.map((recipe, index) => (
+                  {recipes.map((recipe) => (
                     <div key={recipe.id} className="border p-4 rounded shadow">
                       <h2 className="text-xl font-semibold">{recipe.title}</h2>
                       <div className="flex mt-2 gap-2">

@@ -61,8 +61,8 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 overflow-auto">
-      <div className="bg-white rounded-lg p-6 max-w-lg mx-auto shadow-lg w-full max-w-3xl max-h-[800px] overflow-auto relative">
+    <div className="fixed inset-0 flex justify-center items-center">
+      <div className="bg-white p-6 max-w-lg mx-auto w-full max-w-3xl max-h-[800px] overflow-auto relative">
         <h1 className="text-2xl font-bold mb-4">{title}</h1>
         <h2 className="text-xl mb-4">조리 과정</h2>
         <ul className="list-decimal list-inside mb-4">

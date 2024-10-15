@@ -3,10 +3,9 @@ import { useState, useEffect } from "react";
 import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
 import RecipeAdd from "./components/layout/RecipeAdd";
-import { useRouter } from "next/navigation";
+import RecipeDetails from "./components/layout/RecipeDetail";
 
 export default function Home() {
-  const router = useRouter();
   const [recipes, setRecipes] = useState<
     {
       id: string;
@@ -20,6 +19,15 @@ export default function Home() {
   >([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAddingRecipe, setIsAddingRecipe] = useState<boolean>(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<null | {
+    id: string;
+    title: string;
+    tags: string[];
+    ingredients?: string[];
+    processes?: string[];
+    version?: number;
+    versionHistory?: any[];
+  }>(null);
 
   useEffect(() => {
     const storedUserEmail = localStorage.getItem("loggedInUser");
@@ -46,7 +54,10 @@ export default function Home() {
   }, []);
 
   const handleMore = (recipeId: string) => {
-    router.push(`/detailRep?id=${recipeId}`);
+    const recipe = recipes.find((r) => r.id === recipeId);
+    if (recipe) {
+      setSelectedRecipe(recipe);
+    }
   };
 
   const handleAddRecipe = (newRecipe: {
@@ -82,6 +93,35 @@ export default function Home() {
         <div className="flex-grow mt-8">
           {isAddingRecipe ? (
             <RecipeAdd onAddRecipe={handleAddRecipe} />
+          ) : selectedRecipe ? (
+            <div className="bg-white rounded-lg p-6 w-full">
+              <RecipeDetails
+                recipe={{
+                  id: parseInt(selectedRecipe.id, 10),
+                  title: selectedRecipe.title,
+                  tags: selectedRecipe.tags,
+                  ingredients: selectedRecipe.ingredients || [],
+                  processes: selectedRecipe.processes || [],
+                  version: selectedRecipe.version || 1,
+                  versionHistory: selectedRecipe.versionHistory || [],
+                }}
+                onEdit={(recipeId) => {
+                  // Logic to handle edit
+                }}
+                onRestore={(recipeId, version) => {
+                  // Logic to handle version restore
+                }}
+                onClose={() => setSelectedRecipe(null)}
+              />
+              <div className="flex gap-4 mt-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                  onClick={() => setSelectedRecipe(null)}
+                >
+                  목록으로
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               <h2 className="text-2xl font-bold mb-4">Recipe List</h2>

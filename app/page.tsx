@@ -42,11 +42,8 @@ export default function Home() {
         const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
         const activeRecipes = allRecipes.map((recipe) => {
-          const versionHistory = JSON.parse(
-            localStorage.getItem(`versionHistory_${recipe.id}`) || "[]"
-          );
-          const activeVersion = versionHistory.find(
-            (ver: any) => ver.activeVersion
+          const activeVersion = recipe.versionHistory.find(
+            (ver) => ver.activeVersion
           );
           return activeVersion ? { ...recipe, ...activeVersion } : recipe;
         });
@@ -59,7 +56,13 @@ export default function Home() {
   const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
-      setSelectedRecipe(recipe);
+      const activeVersion = recipe.versionHistory.find(
+        (ver) => ver.activeVersion
+      );
+      const selectedRecipe = activeVersion
+        ? { ...recipe, ...activeVersion }
+        : recipe;
+      setSelectedRecipe(selectedRecipe);
     }
   };
 
@@ -96,13 +99,33 @@ export default function Home() {
 
   const handleSaveEditedRecipe = (updatedRecipe: Recipe) => {
     const updatedRecipes = recipes.map((recipe) =>
-      recipe.id === updatedRecipe.id ? updatedRecipe : recipe
+      recipe.id === updatedRecipe.id
+        ? {
+            ...updatedRecipe,
+            versionHistory: [
+              ...updatedRecipe.versionHistory,
+              {
+                version: recipe.version,
+                timestamp: new Date().toISOString(),
+                title: recipe.title,
+                tags: recipe.tags,
+                ingredients: recipe.ingredients,
+                processes: recipe.processes,
+                activeVersion: false,
+              },
+            ],
+          }
+        : recipe
     );
+
     setRecipes(updatedRecipes);
-    localStorage.setItem(
-      `recipes_${userEmail}`,
-      JSON.stringify(updatedRecipes)
-    );
+    if (userEmail) {
+      localStorage.setItem(
+        `recipes_${userEmail}`,
+        JSON.stringify(updatedRecipes)
+      );
+    }
+
     setIsEditingRecipe(false);
     setSelectedRecipe(null);
   };
@@ -118,16 +141,28 @@ export default function Home() {
           processes: version.processes,
           version: version.version,
         };
-        return restoredRecipe;
+
+        const updatedVersionHistory = recipe.versionHistory.map((ver) => ({
+          ...ver,
+          activeVersion: ver.version === version.version,
+        }));
+
+        return {
+          ...restoredRecipe,
+          versionHistory: updatedVersionHistory,
+        };
       }
       return recipe;
     });
 
     setRecipes(updatedRecipes);
-    localStorage.setItem(
-      `recipes_${userEmail}`,
-      JSON.stringify(updatedRecipes)
-    );
+    if (userEmail) {
+      localStorage.setItem(
+        `recipes_${userEmail}`,
+        JSON.stringify(updatedRecipes)
+      );
+    }
+
     setSelectedRecipe(null);
   };
 
@@ -165,16 +200,26 @@ export default function Home() {
                 onRestore={(recipeId, version) => {
                   handleRestoreVersion(recipeId, version);
                 }}
-                onClose={() => setSelectedRecipe(null)}
+                onClose={(updatedRecipe) => {
+                  // 레시피 업데이트
+                  const updatedRecipes = recipes.map((recipe) =>
+                    recipe.id === updatedRecipe.id ? updatedRecipe : recipe
+                  );
+
+                  setRecipes(updatedRecipes);
+
+                  // 로컬 스토리지에도 저장
+                  if (userEmail) {
+                    localStorage.setItem(
+                      `recipes_${userEmail}`,
+                      JSON.stringify(updatedRecipes)
+                    );
+                  }
+
+                  // 선택된 레시피 상태 초기화
+                  setSelectedRecipe(null);
+                }}
               />
-              <div className="flex gap-4 mt-4">
-                <button
-                  className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                  onClick={() => setSelectedRecipe(null)}
-                >
-                  목록으로
-                </button>
-              </div>
             </div>
           ) : (
             <>

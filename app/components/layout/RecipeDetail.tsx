@@ -11,7 +11,15 @@ interface Version {
   processes: string[];
   activeVersion?: boolean;
 }
-
+interface Recipe {
+  id: number;
+  title: string;
+  tags: string[];
+  ingredients: string[];
+  processes: string[];
+  version: number;
+  versionHistory: Version[];
+}
 interface RecipeDetailsProps {
   recipe: {
     id: number;
@@ -23,7 +31,7 @@ interface RecipeDetailsProps {
     versionHistory: Version[];
   };
   onRestore: (recipeId: number, version: Version) => void;
-  onClose: () => void;
+  onClose: (updatedRecipe: Recipe) => void; // 인자로 updatedRecipe를 받도록 수정
 }
 
 const RecipeDetails: React.FC<RecipeDetailsProps> = ({
@@ -133,7 +141,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
           </button>
           <button
             className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-            onClick={onClose}
+            onClick={() => onClose(editedRecipe)} // 현재 상태 전달
           >
             목록으로
           </button>

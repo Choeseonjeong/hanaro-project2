@@ -6,22 +6,27 @@ import RecipeAdd from "./components/layout/RecipeAdd";
 import RecipeDetails from "./components/layout/RecipeDetail";
 import RecipeEditForm from "./components/layout/RecipeEdit";
 
+// Recipe 및 Version 인터페이스 정의
+interface Version {
+  version: number;
+  timestamp: string;
+  title: string;
+  tags: string[];
+  ingredients: string[];
+  processes: string[];
+  timers: number[];
+  activeVersion?: boolean; // 선택적 속성으로 정의
+}
+
 interface Recipe {
   id: number;
   title: string;
   tags: string[];
   ingredients: string[];
   processes: string[];
+  timers: number[]; // 타이머 속성 추가
   version: number;
-  versionHistory: {
-    version: number;
-    timestamp: string;
-    title: string;
-    tags: string[];
-    ingredients: string[];
-    processes: string[];
-    activeVersion?: boolean;
-  }[];
+  versionHistory: Version[]; // versionHistory에 Version 타입을 적용
 }
 
 export default function Home() {
@@ -71,6 +76,7 @@ export default function Home() {
     tags: string[];
     ingredients: string[];
     processes: string[];
+    timers: number[]; // 타이머 추가
   }) => {
     const updatedRecipes: Recipe[] = [
       ...recipes,
@@ -111,6 +117,7 @@ export default function Home() {
                 tags: recipe.tags,
                 ingredients: recipe.ingredients,
                 processes: recipe.processes,
+                timers: recipe.timers, // 타이머도 기록에 추가
                 activeVersion: false,
               },
             ],
@@ -130,7 +137,7 @@ export default function Home() {
     setSelectedRecipe(null);
   };
 
-  const handleRestoreVersion = (recipeId: number, version: any) => {
+  const handleRestoreVersion = (recipeId: number, version: Version) => {
     const updatedRecipes = recipes.map((recipe) => {
       if (recipe.id === recipeId) {
         const restoredRecipe: Recipe = {
@@ -139,6 +146,7 @@ export default function Home() {
           tags: version.tags,
           ingredients: version.ingredients,
           processes: version.processes,
+          timers: version.timers, // 복원할 때 타이머도 포함
           version: version.version,
         };
 
@@ -201,14 +209,12 @@ export default function Home() {
                   handleRestoreVersion(recipeId, version);
                 }}
                 onClose={(updatedRecipe) => {
-                  // 레시피 업데이트
                   const updatedRecipes = recipes.map((recipe) =>
                     recipe.id === updatedRecipe.id ? updatedRecipe : recipe
                   );
 
                   setRecipes(updatedRecipes);
 
-                  // 로컬 스토리지에도 저장
                   if (userEmail) {
                     localStorage.setItem(
                       `recipes_${userEmail}`,
@@ -216,7 +222,6 @@ export default function Home() {
                     );
                   }
 
-                  // 선택된 레시피 상태 초기화
                   setSelectedRecipe(null);
                 }}
               />

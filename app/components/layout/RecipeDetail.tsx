@@ -9,7 +9,7 @@ interface Version {
   tags: string[];
   ingredients: string[];
   processes: string[];
-  timers: number[]; // 추가: 각 조리 과정의 타이머 기록
+  timers: number[];
   activeVersion?: boolean;
 }
 interface Recipe {
@@ -18,7 +18,7 @@ interface Recipe {
   tags: string[];
   ingredients: string[];
   processes: string[];
-  timers: number[]; // 추가: 각 조리 과정의 타이머 기록
+  timers: number[];
   version: number;
   versionHistory: Version[];
 }
@@ -29,12 +29,12 @@ interface RecipeDetailsProps {
     tags: string[];
     ingredients: string[];
     processes: string[];
-    timers: number[]; // 추가: 각 조리 과정의 타이머 기록
+    timers: number[];
     version: number;
     versionHistory: Version[];
   };
   onRestore: (recipeId: number, version: Version) => void;
-  onClose: (updatedRecipe: Recipe) => void; // 인자로 updatedRecipe를 받도록 수정
+  onClose: (updatedRecipe: Recipe) => void;
 }
 
 const RecipeDetails: React.FC<RecipeDetailsProps> = ({
@@ -44,9 +44,8 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 }) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState(recipe);
-  const [timers, setTimers] = useState<number[]>(recipe.timers || []); // 추가: 타이머 상태
+  const [timers, setTimers] = useState<number[]>(recipe.timers || []);
 
-  // 로컬 스토리지에서 데이터 로드
   useEffect(() => {
     const savedRecipe = localStorage.getItem(`recipe_${recipe.id}`);
     if (savedRecipe) {
@@ -54,12 +53,10 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
     }
   }, [recipe.id]);
 
-  // 로컬 스토리지에 데이터 저장
   const saveToLocalStorage = (updatedRecipe: typeof recipe) => {
     localStorage.setItem(`recipe_${recipe.id}`, JSON.stringify(updatedRecipe));
   };
 
-  // 복원 함수가 호출될 때 해당 버전으로 데이터를 업데이트하고 저장
   const handleRestore = (version: Version) => {
     const restoredRecipe = {
       ...editedRecipe,
@@ -67,12 +64,12 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
       tags: version.tags,
       ingredients: version.ingredients,
       processes: version.processes,
-      timers: version.timers, // 복원 시 타이머도 함께 복원
+      timers: version.timers,
       version: version.version,
     };
     setEditedRecipe(restoredRecipe);
-    setTimers(version.timers); // 타이머 복원
-    saveToLocalStorage(restoredRecipe); // 로컬 스토리지에 저장
+    setTimers(version.timers);
+    saveToLocalStorage(restoredRecipe);
   };
 
   const handleEdit = () => {
@@ -80,14 +77,12 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   };
 
   const handleSaveChanges = (updatedRecipe: typeof recipe) => {
-    // 수정된 내용을 로컬 스토리지에 저장
     setEditedRecipe(updatedRecipe);
-    saveToLocalStorage(updatedRecipe); // 로컬 스토리지에 저장
+    saveToLocalStorage(updatedRecipe);
     setEditMode(false);
   };
 
   const handleStartTimer = (index: number, duration: number) => {
-    // 타이머가 완료되면 alert 알림 표시
     setTimeout(() => {
       alert(`Step ${index + 1}의 타이머가 완료되었습니다.`);
     }, duration * 1000);
@@ -100,13 +95,11 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 
     const updatedRecipe = { ...editedRecipe, timers: updatedTimers };
     setEditedRecipe(updatedRecipe);
-    saveToLocalStorage(updatedRecipe); // 로컬 스토리지에 저장
+    saveToLocalStorage(updatedRecipe);
 
-    // 타이머 시작
     handleStartTimer(index, duration);
   };
 
-  // 타이머가 변경될 때 리렌더링 트리거
   useEffect(() => {
     setTimers(editedRecipe.timers || []);
   }, [editedRecipe]);
@@ -135,7 +128,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
                 <input
                   type="number"
                   placeholder="타이머 설정 (초)"
-                  value={timers[index] || 0} // 타이머 기본값 0
+                  value={timers[index] || 0}
                   onChange={(e) =>
                     handleSetTimer(index, Number(e.target.value))
                   }
@@ -161,7 +154,6 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
         </div>
         <h3 className="text-lg mb-4">버전: {editedRecipe.version}</h3>
 
-        {/* 버전 관리 UI */}
         <div className="mb-4">
           <h3 className="text-lg mb-2">수정 기록</h3>
           {editedRecipe?.versionHistory?.map((ver, index) => (
@@ -189,7 +181,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
           </button>
           <button
             className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-            onClick={() => onClose(editedRecipe)} // 현재 상태 전달
+            onClick={() => onClose(editedRecipe)}
           >
             목록으로
           </button>

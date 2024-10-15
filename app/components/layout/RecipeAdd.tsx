@@ -7,6 +7,7 @@ interface RecipeAddProps {
     tags: string[];
     ingredients: string[];
     processes: string[];
+    timers: number[]; // 타이머 필드 추가
   }) => void;
 }
 
@@ -18,6 +19,8 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
   const [ingredient, setIngredient] = useState<string>("");
   const [process, setProcess] = useState<string>("");
   const [processes, setProcesses] = useState<string[]>([]);
+  const [timer, setTimer] = useState<number>(0); // 타이머 필드 추가
+  const [timers, setTimers] = useState<number[]>([]); // 타이머 배열 추가
 
   const router = useRouter();
 
@@ -38,7 +41,9 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
   const addProcess = () => {
     if (process.trim() !== "") {
       setProcesses([...processes, process]);
+      setTimers([...timers, timer]); // 각 조리 과정에 대한 타이머 추가
       setProcess("");
+      setTimer(0); // 타이머 초기화
     }
   };
 
@@ -54,7 +59,9 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
 
   const removeProcess = (index: number) => {
     const newProcesses = processes.filter((_, i) => i !== index);
+    const newTimers = timers.filter((_, i) => i !== index); // 해당 조리 과정의 타이머도 함께 삭제
     setProcesses(newProcesses);
+    setTimers(newTimers);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -69,6 +76,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
       tags,
       ingredients,
       processes,
+      timers, // 타이머도 함께 전달
     };
 
     onAddRecipe(newRecipe);
@@ -188,10 +196,19 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
                 추가
               </button>
             </div>
+            <div className="mt-2">
+              <label>타이머 (초)</label>
+              <input
+                type="number"
+                value={timer}
+                onChange={(e) => setTimer(Number(e.target.value))}
+                className="w-full p-2 border rounded-lg"
+              />
+            </div>
             <ul className="mt-4">
               {processes.map((item, index) => (
                 <li key={index} className="flex items-center mb-2">
-                  {index + 1}. {item}
+                  {index + 1}. {item} (타이머: {timers[index]}초)
                   <button
                     onClick={() => removeProcess(index)}
                     className="text-red-500 ml-2"

@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/layout/header";
 import Footer from "../components/layout/footer";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function addRep() {
+export default function EditRep() {
   const [title, setTitle] = useState<string>("");
   const [tag, setTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
@@ -12,28 +12,39 @@ export default function addRep() {
   const [ingredient, setIngredient] = useState<string>("");
   const [process, setProcess] = useState<string>("");
   const [processes, setProcesses] = useState<string[]>([]);
+  const [version, setVersion] = useState<number>(1); // 버전 정보 추가
+  const [versionHistory, setVersionHistory] = useState<any[]>([]); // 버전 기록
+  const [recipeId, setRecipeId] = useState<string>(""); // 고유한 레시피 ID
 
   const router = useRouter();
+  const searchParams = useSearchParams(); // URL에서 레시피 ID를 가져옴
 
-  // Title 변경 시 로컬 스토리지에 저장
   useEffect(() => {
-    localStorage.setItem("title", title);
-  }, [title]);
+    let id = searchParams.get("id");
 
-  // Tags 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("tags", JSON.stringify(tags));
-  }, [tags]);
+    // 새로운 레시피일 경우 고유한 ID를 현재 시간으로 생성
+    if (!id) {
+      id = Date.now().toString();
+    }
 
-  // Ingredients 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("ingredients", JSON.stringify(ingredients));
-  }, [ingredients]);
+    setRecipeId(id);
 
-  // Processes 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("processes", JSON.stringify(processes));
-  }, [processes]);
+    const savedRecipe = localStorage.getItem(`selectedRecipe_${id}`);
+    const savedVersionHistory = localStorage.getItem(`versionHistory_${id}`);
+
+    if (savedRecipe) {
+      const recipe = JSON.parse(savedRecipe);
+      setTitle(recipe.title);
+      setTags(recipe.tags || []);
+      setIngredients(recipe.ingredients || []);
+      setProcesses(recipe.processes || []);
+      setVersion(recipe.version || 1);
+    }
+
+    if (savedVersionHistory) {
+      setVersionHistory(JSON.parse(savedVersionHistory));
+    }
+  }, [searchParams]);
 
   // add functions
   const addTag = () => {
@@ -42,12 +53,14 @@ export default function addRep() {
       setTag("");
     }
   };
+
   const addIngredient = () => {
     if (ingredient.trim() !== "") {
       setIngredients([...ingredients, ingredient]);
       setIngredient("");
     }
   };
+
   const addProcess = () => {
     if (process.trim() !== "") {
       setProcesses([...processes, process]);
@@ -59,16 +72,18 @@ export default function addRep() {
     const newTags = tags.filter((_, i) => i !== index);
     setTags(newTags);
   };
+
   const removeIngredient = (index: number) => {
     const newIngredients = ingredients.filter((_, i) => i !== index);
     setIngredients(newIngredients);
   };
+
   const removeProcess = (index: number) => {
     const newProcesses = processes.filter((_, i) => i !== index);
     setProcesses(newProcesses);
   };
 
-  // 저장 버튼 클릭 시 모든 데이터를 한 번에 로컬 스토리지에 저장
+  // 저장 버튼 클릭 시 모든 데이터를 로컬 스토리지에 저장하고 버전 업데이트
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "" || tags.length === 0) {
@@ -76,11 +91,59 @@ export default function addRep() {
       return;
     }
 
-    const newRecipe = { title, tags, ingredients, processes };
-    localStorage.setItem("newRecipe", JSON.stringify(newRecipe));
+    const newVersion = version + 1; // 새로운 버전
+    const timestamp = new Date().toLocaleString(); // 수정 시간 기록
 
-    alert("레시피가 저장되었습니다.");
-    router.push("/"); // 저장 후 메인 페이지로 이동
+    // 현재 버전의 레시피를 버전 기록에 저장
+    const currentVersion = {
+      title,
+      tags,
+      ingredients,
+      processes,
+      version,
+      timestamp, // 저장 시간 기록
+      activeVersion: false, // 현재는 활성화되지 않은 버전
+    };
+
+    const updatedVersionHistory = [...versionHistory, currentVersion];
+    setVersionHistory(updatedVersionHistory);
+
+    // 새로운 레시피는 activeVersion: true로 설정
+    const newRecipe = {
+      id: recipeId, // 고유 레시피 ID
+      title,
+      tags,
+      ingredients,
+      processes,
+      version: newVersion,
+      activeVersion: true, // 새로 저장된 레시피는 활성화 상태로 설정
+    };
+
+    // 로컬 스토리지에 해당 레시피의 버전 및 내용을 저장
+    localStorage.setItem(
+      `selectedRecipe_${recipeId}`,
+      JSON.stringify(newRecipe)
+    ); // 수정된 레시피 저장
+    localStorage.setItem(
+      `versionHistory_${recipeId}`,
+      JSON.stringify(updatedVersionHistory)
+    ); // 버전 기록 저장
+
+    // 레시피 목록에 추가하거나 업데이트
+    const storedRecipes = localStorage.getItem("recipes") || "[]";
+    const recipes = JSON.parse(storedRecipes);
+
+    // 기존에 활성화된 레시피를 비활성화 (activeVersion: false로 변경)
+    const updatedRecipes = recipes.map((r: any) =>
+      r.id === recipeId ? { ...r, activeVersion: false } : r
+    );
+
+    // 새로운 레시피 추가
+    updatedRecipes.push(newRecipe);
+    localStorage.setItem("recipes", JSON.stringify(updatedRecipes));
+
+    alert(`레시피가 저장되었습니다. 버전: ${newVersion}`);
+    router.push(`/detailRep?id=${recipeId}`); // 저장 후 detailRep으로 이동
   };
 
   return (
@@ -96,11 +159,11 @@ export default function addRep() {
       <section className="p-8 max-w-xl mx-auto min-h-screen flex flex-col bg-white">
         <Header />
         <div className="flex-grow mt-8">
-          <h2 className="text-xl mb-4 font-bold">Add Recipe</h2>
+          <h2 className="text-xl mb-4 font-bold">Edit Recipe</h2>
 
           {/* Title */}
           <div className="mb-4">
-            <label className="block mb-">Title</label>
+            <label className="block mb-2">Title</label>
             <input
               type="text"
               placeholder="레시피 제목을 입력하세요"

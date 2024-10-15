@@ -5,21 +5,23 @@ import LoginButton from "../ui/LoginButton";
 
 export default function Header() {
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIsLoggedIn(loggedIn);
   }, []);
 
   const handleAddRecipe = () => {
-    if (isClient) {
+    if (isLoggedIn) {
       router.push("/addRep");
+    } else {
+      alert("로그인 후에 레시피를 추가할 수 있습니다.");
     }
   };
+
   const handleMain = () => {
-    if (isClient) {
-      router.push("/");
-    }
+    router.push("/");
   };
 
   return (

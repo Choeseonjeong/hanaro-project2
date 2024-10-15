@@ -13,6 +13,8 @@ export default function Home() {
       tags: string[];
       ingredients?: string[];
       processes?: string[];
+      version?: number;
+      activeVersion?: boolean;
     }[]
   >([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -25,7 +27,18 @@ export default function Home() {
       const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
       if (storedRecipes) {
         const allRecipes = JSON.parse(storedRecipes);
-        setRecipes(allRecipes); // 레시피 설정
+
+        const activeRecipes = allRecipes.map((recipe: any) => {
+          const versionHistory = JSON.parse(
+            localStorage.getItem(`versionHistory_${recipe.id}`) || "[]"
+          );
+          const activeVersion = versionHistory.find(
+            (ver: any) => ver.activeVersion
+          );
+          return activeVersion || recipe;
+        });
+
+        setRecipes(activeRecipes);
       }
     }
   }, []);

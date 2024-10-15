@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Header from "../components/layout/header";
 import Footer from "../components/layout/footer";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,6 @@ export default function AddRep() {
 
   const router = useRouter();
 
-  // 태그, 재료, 과정 추가 함수
   const addTag = () => {
     if (tag.trim() !== "") {
       setTags([...tags, tag.trim()]);
@@ -48,7 +47,6 @@ export default function AddRep() {
     setProcesses(newProcesses);
   };
 
-  // 저장 버튼 클릭 시 로컬 스토리지에 저장
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "" || tags.length === 0) {
@@ -56,32 +54,36 @@ export default function AddRep() {
       return;
     }
 
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (!loggedInUser) {
-      alert("로그인 정보가 없습니다.");
-      return;
-    }
-
-    // 새로운 레시피 추가
     const newRecipe = {
-      id: Date.now().toString(), // 고유 ID 추가
+      id: Date.now().toString(),
       title,
       tags,
       ingredients,
       processes,
+      version: 1,
+      activeVersion: true,
+      versionHistory: [
+        {
+          id: Date.now().toString(),
+          title,
+          tags,
+          ingredients,
+          processes,
+          version: 1,
+          activeVersion: true,
+          timestamp: new Date().toISOString(),
+        },
+      ],
     };
 
-    // 기존 레시피 목록 불러오기
-    const storedRecipes =
-      localStorage.getItem(`recipes_${loggedInUser}`) || "[]";
+    const storedRecipes = localStorage.getItem("recipes") || "[]";
     const recipes = JSON.parse(storedRecipes);
-    recipes.push(newRecipe); // 새 레시피 추가
+    recipes.push(newRecipe);
 
-    // 새로운 레시피 목록을 로컬 스토리지에 저장
-    localStorage.setItem(`recipes_${loggedInUser}`, JSON.stringify(recipes));
+    localStorage.setItem("recipes", JSON.stringify(recipes));
 
     alert("레시피가 저장되었습니다.");
-    router.push("/"); // 저장 후 메인 페이지로 이동
+    router.push("/");
   };
 
   return (

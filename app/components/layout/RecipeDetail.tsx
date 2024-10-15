@@ -9,6 +9,7 @@ interface Version {
   tags: string[];
   ingredients: string[];
   processes: string[];
+  timers: number[]; // 추가: 각 조리 과정의 타이머 기록
   activeVersion?: boolean;
 }
 interface Recipe {
@@ -17,6 +18,7 @@ interface Recipe {
   tags: string[];
   ingredients: string[];
   processes: string[];
+  timers: number[]; // 추가: 각 조리 과정의 타이머 기록
   version: number;
   versionHistory: Version[];
 }
@@ -27,6 +29,7 @@ interface RecipeDetailsProps {
     tags: string[];
     ingredients: string[];
     processes: string[];
+    timers: number[]; // 추가: 각 조리 과정의 타이머 기록
     version: number;
     versionHistory: Version[];
   };
@@ -41,6 +44,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 }) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState(recipe);
+  const [timers, setTimers] = useState<number[]>(recipe.timers || []); // 추가: 타이머 상태
 
   // 로컬 스토리지에서 데이터 로드
   useEffect(() => {
@@ -63,9 +67,11 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
       tags: version.tags,
       ingredients: version.ingredients,
       processes: version.processes,
+      timers: version.timers, // 복원 시 타이머도 함께 복원
       version: version.version,
     };
     setEditedRecipe(restoredRecipe);
+    setTimers(version.timers); // 타이머 복원
     saveToLocalStorage(restoredRecipe); // 로컬 스토리지에 저장
   };
 
@@ -79,6 +85,31 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
     saveToLocalStorage(updatedRecipe); // 로컬 스토리지에 저장
     setEditMode(false);
   };
+
+  const handleStartTimer = (index: number, duration: number) => {
+    // 타이머가 완료되면 alert 알림 표시
+    setTimeout(() => {
+      alert(`Step ${index + 1}의 타이머가 완료되었습니다.`);
+    }, duration * 1000);
+  };
+
+  const handleSetTimer = (index: number, duration: number) => {
+    const updatedTimers = [...timers];
+    updatedTimers[index] = duration;
+    setTimers(updatedTimers);
+
+    const updatedRecipe = { ...editedRecipe, timers: updatedTimers };
+    setEditedRecipe(updatedRecipe);
+    saveToLocalStorage(updatedRecipe); // 로컬 스토리지에 저장
+
+    // 타이머 시작
+    handleStartTimer(index, duration);
+  };
+
+  // 타이머가 변경될 때 리렌더링 트리거
+  useEffect(() => {
+    setTimers(editedRecipe.timers || []);
+  }, [editedRecipe]);
 
   if (editMode) {
     return (
@@ -100,6 +131,23 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
           {editedRecipe.processes.map((step, index) => (
             <li key={index} className="mb-2">
               Step {index + 1}: {step}
+              <div className="flex items-center mt-2">
+                <input
+                  type="number"
+                  placeholder="타이머 설정 (초)"
+                  value={timers[index] || 0} // 타이머 기본값 0
+                  onChange={(e) =>
+                    handleSetTimer(index, Number(e.target.value))
+                  }
+                  className="border p-1 w-24 mr-2"
+                />
+                <button
+                  onClick={() => handleStartTimer(index, timers[index])}
+                  className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+                >
+                  타이머 시작
+                </button>
+              </div>
             </li>
           ))}
         </ul>

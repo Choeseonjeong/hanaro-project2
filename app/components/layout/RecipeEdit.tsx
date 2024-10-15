@@ -1,11 +1,13 @@
 // components/RecipeEditForm.tsx
 import React from "react";
+
 interface Recipe {
-  id: number; // 숫자형으로 수정
+  id: number;
   title: string;
   tags: string[];
   ingredients: string[];
   processes: string[];
+  timers: number[]; // 각 조리 과정의 타이머 (초)
   version: number;
   versionHistory: {
     version: number;
@@ -14,6 +16,7 @@ interface Recipe {
     tags: string[];
     ingredients: string[];
     processes: string[];
+    timers: number[]; // 버전별 타이머
     activeVersion?: boolean;
   }[];
 }
@@ -80,6 +83,7 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
     setEditedRecipe((prev) => ({
       ...prev,
       processes: [...prev.processes, ""],
+      timers: [...prev.timers, 0], // 새로운 과정 추가 시 기본 타이머 0초 설정
     }));
   };
 
@@ -93,7 +97,19 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
     const updatedProcesses = editedRecipe.processes.filter(
       (_, i) => i !== index
     );
-    setEditedRecipe({ ...editedRecipe, processes: updatedProcesses });
+    const updatedTimers = editedRecipe.timers.filter((_, i) => i !== index); // 타이머도 함께 삭제
+    setEditedRecipe({
+      ...editedRecipe,
+      processes: updatedProcesses,
+      timers: updatedTimers,
+    });
+  };
+
+  // 타이머 설정 변경
+  const handleTimerChange = (index: number, value: string) => {
+    const updatedTimers = [...editedRecipe.timers];
+    updatedTimers[index] = parseInt(value) || 0; // 숫자로 변환, 숫자가 아니면 0으로 설정
+    setEditedRecipe({ ...editedRecipe, timers: updatedTimers });
   };
 
   // 버전 히스토리 로컬에 저장
@@ -110,6 +126,7 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
           tags: editedRecipe.tags,
           ingredients: editedRecipe.ingredients,
           processes: editedRecipe.processes,
+          timers: editedRecipe.timers, // 저장할 때 타이머 정보도 포함
         },
       ],
     };
@@ -188,20 +205,29 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
       <div className="mb-4">
         <h3 className="font-semibold mb-2 text-green-600">조리 과정</h3>
         {editedRecipe.processes.map((process, index) => (
-          <div key={index} className="flex items-center mb-2">
+          <div key={index} className="mb-2">
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={process}
+                onChange={(e) => handleProcessChange(index, e.target.value)}
+                placeholder={`조리 과정 ${index + 1}`}
+                className="border border-green-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+              />
+              <button
+                onClick={() => handleDeleteProcess(index)}
+                className="bg-red-500 text-white rounded-md p-2 ml-2 hover:bg-red-600 whitespace-nowrap"
+              >
+                삭제
+              </button>
+            </div>
             <input
-              type="text"
-              value={process}
-              onChange={(e) => handleProcessChange(index, e.target.value)}
-              placeholder={`조리 과정 ${index + 1}`}
-              className="border border-green-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+              type="number"
+              value={editedRecipe.timers[index] || 0} // undefined일 경우 0으로 처리
+              onChange={(e) => handleTimerChange(index, e.target.value)}
+              placeholder="타이머 설정 (초)"
+              className="border border-blue-300 rounded-md p-2 w-full mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            <button
-              onClick={() => handleDeleteProcess(index)}
-              className="bg-red-500 text-white rounded-md p-2 ml-2 hover:bg-red-600 whitespace-nowrap"
-            >
-              삭제
-            </button>
           </div>
         ))}
         <button

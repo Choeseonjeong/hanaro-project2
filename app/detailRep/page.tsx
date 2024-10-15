@@ -1,116 +1,134 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/layout/header";
 import Footer from "../components/layout/footer";
-import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function RecipeDetails() {
+  const [title, setTitle] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [processes, setProcesses] = useState<string[]>([]);
+  const [version, setVersion] = useState<number>(1); // 버전 정보 추가
+  const [versionHistory, setVersionHistory] = useState<any[]>([]); // 버전 기록
+  const [recipeIndex, setRecipeIndex] = useState<number | null>(null); // 레시피 인덱스
   const router = useRouter();
-  const [recipes, setRecipes] = useState<
-    {
-      id: string;
-      title: string;
-      tags: string[];
-      ingredients?: string[];
-      processes?: string[];
-      version?: number;
-      activeVersion?: boolean;
-    }[]
-  >([]);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const searchParams = useSearchParams(); // URL에서 인덱스를 가져옴
 
-  // 유저 이메일 및 레시피 불러오기
   useEffect(() => {
-    const storedUserEmail = localStorage.getItem("loggedInUser");
-    if (storedUserEmail) {
-      setUserEmail(storedUserEmail);
-
-      const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
+    const index = searchParams.get("id"); // URL의 레시피 인덱스 값
+    if (index !== null) {
+      const storedRecipes = localStorage.getItem("recipes"); // 레시피 배열 가져오기
       if (storedRecipes) {
-        const allRecipes = JSON.parse(storedRecipes);
-
-        // 각 레시피의 활성화된 버전만 불러오기
-        const activeRecipes = allRecipes.map((recipe: any) => {
-          const versionHistory = JSON.parse(
-            localStorage.getItem(`versionHistory_${recipe.id}`) || "[]"
-          );
-          const activeVersion = versionHistory.find(
-            (ver: any) => ver.activeVersion
-          );
-          return activeVersion || recipe;
-        });
-
-        setRecipes(activeRecipes);
+        const recipes = JSON.parse(storedRecipes);
+        const selectedRecipe = recipes[parseInt(index, 10)]; // 배열의 인덱스로 레시피 가져오기
+        if (selectedRecipe) {
+          setTitle(selectedRecipe.title);
+          setTags(selectedRecipe.tags || []);
+          setIngredients(selectedRecipe.ingredients || []);
+          setProcesses(selectedRecipe.processes || []);
+          setVersion(selectedRecipe.version || 1);
+          setVersionHistory(selectedRecipe.versionHistory || []);
+          setRecipeIndex(parseInt(index, 10)); // 현재 레시피 인덱스 저장
+        }
       }
     }
-  }, []);
+  }, [searchParams]);
 
-  // 새로 추가된 레시피를 불러와서 업데이트
-  useEffect(() => {
-    if (userEmail) {
-      const storedRecipe = localStorage.getItem("newRecipe");
-      if (storedRecipe) {
-        const newRecipe = JSON.parse(storedRecipe);
-        const updatedRecipes = [...recipes, newRecipe];
-        setRecipes(updatedRecipes);
-        localStorage.setItem(
-          `recipes_${userEmail}`,
-          JSON.stringify(updatedRecipes)
-        );
-        localStorage.removeItem("newRecipe");
-      }
+  // 복원 기능: 선택한 버전을 activeVersion: true로 설정하고 나머지는 false
+  const restoreVersion = (versionToRestore: any) => {
+    const updatedVersionHistory = versionHistory.map(
+      (ver) =>
+        ver.version === versionToRestore.version
+          ? { ...ver, activeVersion: true } // 선택한 버전을 활성화
+          : { ...ver, activeVersion: false } // 나머지는 비활성화
+    );
+
+    // 상태 업데이트
+    setTitle(versionToRestore.title);
+    setTags(versionToRestore.tags);
+    setIngredients(versionToRestore.ingredients);
+    setProcesses(versionToRestore.processes);
+    setVersion(versionToRestore.version);
+    setVersionHistory(updatedVersionHistory);
+
+    // 레시피 목록 업데이트
+    const storedRecipes = localStorage.getItem("recipes");
+    if (storedRecipes && recipeIndex !== null) {
+      const recipes = JSON.parse(storedRecipes);
+      recipes[recipeIndex] = {
+        ...recipes[recipeIndex],
+        ...versionToRestore,
+      }; // 복원된 버전으로 업데이트
+      localStorage.setItem("recipes", JSON.stringify(recipes)); // 업데이트된 레시피 저장
     }
-  }, [userEmail]); // recipes 의존성 제거
 
-  // "더보기" 버튼 클릭 시 레시피 상세 정보 보기
-  const handleMore = (recipeId: string) => {
-    router.push(`/detailRep?id=${recipeId}`); // 레시피 ID를 URL에 포함하여 상세 페이지로 이동
+    alert(`버전 ${versionToRestore.version}로 복원되었습니다.`);
+  };
+
+  // 수정 페이지로 이동하는 함수
+  const handleEdit = () => {
+    if (recipeIndex !== null) {
+      router.push(`/editRep?id=${recipeIndex}`); // 레시피 인덱스로 수정 페이지로 이동
+    }
   };
 
   return (
-    <div
-      className="bg-no-repeat"
-      style={{
-        backgroundImage: `url('/images/start1.jpg')`,
-        backgroundSize: "100% auto",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <div className="p-8 max-w-xl mx-auto min-h-screen flex flex-col bg-white">
-        <Header />
-        <div className="flex-grow mt-8">
-          <h2 className="text-2xl font-bold mb-4">Recipe List</h2>
-          {recipes.length === 0 ? (
-            <p className="text-gray-500 font-bold">추가된 레시피가 없습니다.</p>
-          ) : (
-            <div className="space-y-4">
-              {recipes.map((recipe, index) => (
-                <div key={index} className="border p-4 rounded shadow">
-                  <h2 className="text-xl font-semibold">{recipe.title}</h2>
-                  <div className="flex mt-2 gap-2">
-                    {recipe.tags.map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className="bg-my-color text-gray-500 px-3 py-1 rounded-full"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                    <button
-                      className="ml-auto rounded-lg text-sm bg-blue-500 text-white px-3 py-1"
-                      onClick={() => handleMore(recipe.id)} // 고유 레시피 ID로 이동
-                    >
-                      더보기
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+    <div className="p-8 max-w-xl mx-auto min-h-screen bg-white">
+      <Header />
+      <h1 className="text-2xl font-bold mb-4">{title}</h1>
+      <h2 className="text-xl mb-4">조리 과정</h2>
+      {processes.map((step, index) => (
+        <div key={index} className="mb-4">
+          <p>
+            Step {index + 1}: {step}
+          </p>
         </div>
-        <Footer />
+      ))}
+      <h3 className="text-lg mt-8 mb-2">#태그</h3>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {tags.map((tag, index) => (
+          <span key={index} className="bg-gray-200 px-3 py-1 rounded-full">
+            #{tag}
+          </span>
+        ))}
       </div>
+      <h3 className="text-lg mb-4">버전: {version}</h3>
+
+      {/* 버전 관리 UI */}
+      <div className="mb-4">
+        <h3 className="text-lg mb-2">수정 기록</h3>
+        {versionHistory.map((ver, index) => (
+          <div key={index} className="mb-2">
+            <span className="mr-2">
+              버전 {ver.version} (수정일: {ver.timestamp}){" "}
+              {ver.activeVersion && "(현재 버전)"}
+            </span>
+            <button
+              onClick={() => restoreVersion(ver)}
+              className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+            >
+              이 버전으로 복원
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-4 mt-4">
+        <button
+          className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+          onClick={handleEdit}
+        >
+          수정
+        </button>
+        <button
+          className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+          onClick={() => router.push("/")}
+        >
+          목록으로
+        </button>
+      </div>
+      <Footer />
     </div>
   );
 }

@@ -13,8 +13,6 @@ export default function Home() {
       tags: string[];
       ingredients?: string[];
       processes?: string[];
-      version?: number;
-      activeVersion?: boolean;
     }[]
   >([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -27,43 +25,10 @@ export default function Home() {
       const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
       if (storedRecipes) {
         const allRecipes = JSON.parse(storedRecipes);
-
-        // 각 레시피의 활성화된 버전만 불러오기
-        const activeRecipes = allRecipes.map((recipe: any) => {
-          const versionHistory = JSON.parse(
-            localStorage.getItem(`versionHistory_${recipe.id}`) || "[]"
-          );
-          const activeVersion = versionHistory.find(
-            (ver: any) => ver.activeVersion
-          );
-          return activeVersion || recipe;
-        });
-
-        setRecipes(activeRecipes);
+        setRecipes(allRecipes); // 레시피 설정
       }
     }
   }, []);
-
-  // 새로 추가된 레시피를 불러와서 기존 레시피에 추가
-  useEffect(() => {
-    const storedUserEmail = localStorage.getItem("loggedInUser");
-    if (storedUserEmail) {
-      const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
-      const currentRecipes = storedRecipes ? JSON.parse(storedRecipes) : [];
-
-      const newRecipe = localStorage.getItem("newRecipe");
-      if (newRecipe) {
-        const parsedNewRecipe = JSON.parse(newRecipe);
-        const updatedRecipes = [...currentRecipes, parsedNewRecipe]; // 기존 레시피 목록에 새로운 레시피 추가
-        setRecipes(updatedRecipes);
-        localStorage.setItem(
-          `recipes_${storedUserEmail}`,
-          JSON.stringify(updatedRecipes)
-        );
-        localStorage.removeItem("newRecipe"); // 추가 후 newRecipe는 삭제
-      }
-    }
-  }, []); // newRecipe 의존성 제거
 
   const handleMore = (recipeId: string) => {
     router.push(`/detailRep?id=${recipeId}`);
@@ -88,7 +53,7 @@ export default function Home() {
           ) : (
             <div className="space-y-4">
               {recipes.map((recipe, index) => (
-                <div key={index} className="border p-4 rounded shadow">
+                <div key={recipe.id} className="border p-4 rounded shadow">
                   <h2 className="text-xl font-semibold">{recipe.title}</h2>
                   <div className="flex mt-2 gap-2">
                     {recipe.tags.map((tag, tagIndex) => (

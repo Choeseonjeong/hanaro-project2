@@ -4,7 +4,7 @@ import Header from "../components/layout/header";
 import Footer from "../components/layout/footer";
 import { useRouter } from "next/navigation";
 
-export default function addRep() {
+export default function AddRep() {
   const [title, setTitle] = useState<string>("");
   const [tag, setTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
@@ -15,27 +15,7 @@ export default function addRep() {
 
   const router = useRouter();
 
-  // Title 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("title", title);
-  }, [title]);
-
-  // Tags 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("tags", JSON.stringify(tags));
-  }, [tags]);
-
-  // Ingredients 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("ingredients", JSON.stringify(ingredients));
-  }, [ingredients]);
-
-  // Processes 변경 시 로컬 스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem("processes", JSON.stringify(processes));
-  }, [processes]);
-
-  // add functions
+  // 태그, 재료, 과정 추가 함수
   const addTag = () => {
     if (tag.trim() !== "") {
       setTags([...tags, tag.trim()]);
@@ -68,7 +48,7 @@ export default function addRep() {
     setProcesses(newProcesses);
   };
 
-  // 저장 버튼 클릭 시 모든 데이터를 한 번에 로컬 스토리지에 저장
+  // 저장 버튼 클릭 시 로컬 스토리지에 저장
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "" || tags.length === 0) {
@@ -76,8 +56,29 @@ export default function addRep() {
       return;
     }
 
-    const newRecipe = { title, tags, ingredients, processes };
-    localStorage.setItem("newRecipe", JSON.stringify(newRecipe));
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (!loggedInUser) {
+      alert("로그인 정보가 없습니다.");
+      return;
+    }
+
+    // 새로운 레시피 추가
+    const newRecipe = {
+      id: Date.now().toString(), // 고유 ID 추가
+      title,
+      tags,
+      ingredients,
+      processes,
+    };
+
+    // 기존 레시피 목록 불러오기
+    const storedRecipes =
+      localStorage.getItem(`recipes_${loggedInUser}`) || "[]";
+    const recipes = JSON.parse(storedRecipes);
+    recipes.push(newRecipe); // 새 레시피 추가
+
+    // 새로운 레시피 목록을 로컬 스토리지에 저장
+    localStorage.setItem(`recipes_${loggedInUser}`, JSON.stringify(recipes));
 
     alert("레시피가 저장되었습니다.");
     router.push("/"); // 저장 후 메인 페이지로 이동
@@ -123,7 +124,7 @@ export default function addRep() {
               />
               <button
                 onClick={addTag}
-                className="ml-2  px-4 py-2 rounded-lg bg-my-color2 text-white hover:text-black"
+                className="ml-2 px-4 py-2 rounded-lg bg-my-color2 text-white hover:text-black"
               >
                 추가
               </button>
@@ -179,7 +180,7 @@ export default function addRep() {
             </ul>
           </div>
 
-          {/* Step */}
+          {/* Process */}
           <div className="mb-4">
             <label className="block mb-2">조리 과정</label>
             <div className="flex">
@@ -212,7 +213,7 @@ export default function addRep() {
             </ul>
           </div>
 
-          {/* Store */}
+          {/* Save */}
           <button
             type="submit"
             onClick={handleSubmit}

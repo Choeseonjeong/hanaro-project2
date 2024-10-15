@@ -3,8 +3,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoginButton from "../ui/LoginButton";
 
-export default function Header() {
-  const router = useRouter();
+export default function Header({
+  onShowAddRecipe,
+}: {
+  onShowAddRecipe: () => void;
+}) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -14,23 +17,16 @@ export default function Header() {
 
   const handleAddRecipe = () => {
     if (isLoggedIn) {
-      router.push("/addRep");
+      onShowAddRecipe();
     } else {
-      alert("로그인 후에 레시피를 추가할 수 있습니다.");
+      alert("로그인 해주세요.");
     }
-  };
-
-  const handleMain = () => {
-    router.push("/");
   };
 
   return (
     <>
       <header className="flex justify-between items-center p-4">
-        <button
-          className="text-4xl font-bold font-serif text-black"
-          onClick={handleMain}
-        >
+        <button className="text-4xl font-bold font-serif text-black">
           My Recipe
         </button>
         <div>

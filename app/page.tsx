@@ -46,6 +46,12 @@ export default function Home() {
     } else {
       console.log("로그인된 사용자의 이메일을 찾을 수 없습니다.");
     }
+    const storedSelectedRecipe = localStorage.getItem("selectedRecipe");
+    if (storedSelectedRecipe) {
+      const parsedRecipe = JSON.parse(storedSelectedRecipe);
+      setSelectedRecipe(parsedRecipe);
+      console.log("선택된 레시피 로드:", parsedRecipe);
+    }
     setIsLoading(false);
   }, []);
 
@@ -65,10 +71,22 @@ export default function Home() {
         const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
         const activeRecipes = allRecipes.map((recipe) => {
-          const activeVersion = recipe.versionHistory?.find(
-            (ver) => ver.activeVersion
+          const lastVersion = localStorage.getItem(
+            `recipe_${recipe.id}_lastVersion`
           );
-          return activeVersion ? { ...recipe, ...activeVersion } : recipe;
+          if (lastVersion) {
+            const versionToRestore = recipe.versionHistory.find(
+              (ver) => ver.version === parseInt(lastVersion, 10)
+            );
+            return versionToRestore
+              ? { ...recipe, ...versionToRestore }
+              : recipe;
+          } else {
+            const activeVersion = recipe.versionHistory.find(
+              (ver) => ver.activeVersion
+            );
+            return activeVersion ? { ...recipe, ...activeVersion } : recipe;
+          }
         });
 
         setRecipes(activeRecipes);
@@ -82,10 +100,9 @@ export default function Home() {
       const lastVersion = localStorage.getItem(
         `recipe_${recipeId}_lastVersion`
       );
-
       let selectedRecipe;
 
-      if (lastVersion && recipe.versionHistory?.length) {
+      if (lastVersion && recipe.versionHistory.length) {
         const versionToRestore = recipe.versionHistory.find(
           (ver) => ver.version === parseInt(lastVersion, 10)
         );
@@ -109,6 +126,11 @@ export default function Home() {
         `selectedRecipe_${recipeId}`,
         JSON.stringify(selectedRecipe)
       );
+      localStorage.setItem(
+        `recipe_${recipeId}_lastVersion`,
+        selectedRecipe.version.toString()
+      );
+
       console.log(`선택된 레시피 (recipe_${recipeId}):`, selectedRecipe);
     }
   };

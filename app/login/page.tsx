@@ -16,6 +16,7 @@ export default function LoginPage() {
     if (session?.user?.email) {
       localStorage.setItem("loggedInUser", session.user.email);
       const storedUser = localStorage.getItem(`user_${session.user.email}`);
+
       if (!storedUser) {
         localStorage.setItem(
           `user_${session.user.email}`,
@@ -37,8 +38,10 @@ export default function LoginPage() {
     e.preventDefault();
 
     const storedUser = localStorage.getItem(`user_${email}`);
+
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
+
       if (parsedUser.password === password) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("loggedInUser", email);
@@ -48,7 +51,14 @@ export default function LoginPage() {
         setErrorMessage("비밀번호가 일치하지 않습니다.");
       }
     } else {
-      setErrorMessage("등록되지 않은 이메일입니다.");
+      localStorage.setItem(
+        `user_${email}`,
+        JSON.stringify({ email, password })
+      );
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("loggedInUser", email);
+      alert("새 계정이 생성되었습니다! 자동으로 로그인합니다.");
+      router.replace("/");
     }
   };
 

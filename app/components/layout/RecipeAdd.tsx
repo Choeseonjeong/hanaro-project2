@@ -7,7 +7,7 @@ interface RecipeAddProps {
     tags: string[];
     ingredients: string[];
     processes: string[];
-    timers: number[]; // 타이머 필드 추가 (빈 배열로 초기화)
+    timers: number[];
   }) => void;
 }
 
@@ -39,7 +39,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
   const addProcess = () => {
     if (process.trim() !== "") {
       setProcesses([...processes, process]);
-      setProcess(""); // 입력한 과정 초기화
+      setProcess("");
     }
   };
 
@@ -61,7 +61,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() === "" || tags.length === 0) {
-      alert("제목과 태그를 입력해주세요.");
+      alert("항목을 채워주세요.");
       return;
     }
 
@@ -92,7 +92,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
         <div className="flex-grow mt-8">
           <h2 className="text-xl mb-4 font-bold">Add Recipe</h2>
 
-          {/* Title */}
+          {/* 타이틀 */}
           <div className="mb-4">
             <label className="block mb-">Title</label>
             <input
@@ -104,7 +104,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
             />
           </div>
 
-          {/* Tag */}
+          {/* 태그 */}
           <div className="mb-4">
             <label className="block mb-2">Tag</label>
             <div className="flex">
@@ -140,7 +140,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
             </div>
           </div>
 
-          {/* Ingredient */}
+          {/* 재료 */}
           <div className="mb-4">
             <label className="block mb-2">Ingredient List</label>
             <div className="flex">
@@ -173,7 +173,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
             </ul>
           </div>
 
-          {/* Process */}
+          {/* 조리 과정 */}
           <div className="mb-4">
             <label className="block mb-2">조리 과정</label>
             <div className="flex">
@@ -206,7 +206,7 @@ const RecipeAdd: React.FC<RecipeAddProps> = ({ onAddRecipe }) => {
             </ul>
           </div>
 
-          {/* Save */}
+          {/* 저장 */}
           <button
             type="submit"
             onClick={handleSubmit}

@@ -34,7 +34,10 @@ export default function LoginButton() {
   if (session || isLocalLoggedIn) {
     return (
       <>
-        <button onClick={() => (session ? signOut() : handleLocalSignOut())}>
+        <button
+          className="text-gray-500 hover:text-black"
+          onClick={() => (session ? signOut() : handleLocalSignOut())}
+        >
           Sign out
         </button>
       </>

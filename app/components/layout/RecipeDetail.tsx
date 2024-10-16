@@ -104,7 +104,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 
   const handleStartTimer = (index: number, duration: number) => {
     setTimeout(() => {
-      alert(`Step ${index + 1}의 타이머가 완료되었습니다.`);
+      alert(`Step ${index + 1}의 시간이 지났습니다.`);
     }, duration * 1000);
   };
 
@@ -160,7 +160,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
                 />
                 <button
                   onClick={() => handleStartTimer(index, timers[index])}
-                  className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+                  className="px-3 py-1  text-white rounded-lg bg-my-color2 hover:text-black"
                 >
                   타이머 시작
                 </button>
@@ -168,7 +168,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
             </li>
           ))}
         </ul>
-        <h3 className="text-lg mt-8 mb-2">#태그</h3>
+        <h3 className="text-lg mt-8 mb-2 font-bold">#태그</h3>
         <div className="mb-4 flex flex-wrap gap-2">
           {editedRecipe.tags.map((tag, index) => (
             <span key={index} className="bg-gray-200 px-3 py-1 rounded-full">
@@ -178,7 +178,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
         </div>
 
         <div className="mb-4">
-          <h3 className="text-lg mb-2">수정 기록</h3>
+          <h3 className="text-lg mb-2 font-bold">수정 기록</h3>
           {editedRecipe?.versionHistory?.map((ver, index) => (
             <div key={index} className="mb-2">
               <span className="mr-2">
@@ -186,7 +186,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
               </span>
               <button
                 onClick={() => handleRestore(ver)}
-                className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+                className="px-3 py-1 bg-my-color2 hover:text-black text-white rounded-lg"
               >
                 이 버전으로 복원
               </button>
@@ -196,19 +196,19 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 
         <div className="flex gap-4 mt-4">
           <button
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:text-black"
             onClick={handleEdit}
           >
             수정
           </button>
           <button
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            onClick={() => onDelete(editedRecipe.id)} // 삭제 버튼 핸들러
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:text-black"
+            onClick={() => onDelete(editedRecipe.id)}
           >
             삭제
           </button>
           <button
-            className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+            className="px-4 py-2 bg-gray-300 rounded-lg text-white hover:text-black"
             onClick={() => onClose(editedRecipe)}
           >
             목록으로

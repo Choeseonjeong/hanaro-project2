@@ -6,7 +6,7 @@ interface Recipe {
   tags: string[];
   ingredients: string[];
   processes: string[];
-  timers: number[]; // 각 조리 과정의 타이머 (초)
+  timers: number[];
   version: number;
   versionHistory: {
     version: number;
@@ -15,7 +15,7 @@ interface Recipe {
     tags: string[];
     ingredients: string[];
     processes: string[];
-    timers: number[]; // 버전별 타이머
+    timers: number[];
     activeVersion?: boolean;
   }[];
 }
@@ -101,16 +101,13 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
     });
   };
 
-  // 버전 히스토리 로컬에 저장
   const handleSave = () => {
     const updatedRecipe = {
       ...editedRecipe,
-      // versionHistory 배열의 길이를 기반으로 +1 값 설정
       version: (editedRecipe.versionHistory?.length ?? 0) + 1,
       versionHistory: [
         ...(editedRecipe.versionHistory ?? []),
         {
-          // versionHistory 배열 인덱스를 기반으로 +1 값을 저장
           version: (editedRecipe.versionHistory?.length ?? 0) + 1,
           timestamp: new Date().toISOString(),
           title: editedRecipe.title,
@@ -126,19 +123,20 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
 
   return (
     <div className="p-6 bg-white rounded-lg">
-      <h2 className="text-xl font-bold mb-4 text-green-800">레시피 수정</h2>
+      <h2 className="text-xl font-bold mb-4 text-black">레시피 수정</h2>
+      {/* 제목 */}
       <input
         type="text"
         name="title"
         value={editedRecipe.title}
         onChange={handleInputChange}
         placeholder="레시피 제목"
-        className="border border-green-300 rounded-md p-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+        className="border border-gray-300 rounded-md p-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
       />
 
-      {/* 재료 목록 */}
+      {/* 재료 */}
       <div className="mb-4">
-        <h3 className="font-semibold mb-2 text-green-600">재료 목록</h3>
+        <h3 className="font-semibold mb-2 text-black">재료 목록</h3>
         {editedRecipe.ingredients.map((ingredient, index) => (
           <div key={index} className="flex items-center mb-2">
             <input
@@ -146,19 +144,19 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
               value={ingredient}
               onChange={(e) => handleIngredientChange(index, e.target.value)}
               placeholder={`재료 ${index + 1}`}
-              className="border border-green-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
             />
             <button
               onClick={() => handleDeleteIngredient(index)}
-              className="bg-red-500 text-white rounded-md p-2 ml-2 hover:bg-red-600 whitespace-nowrap"
+              className="text-my-color2 text-lg font-bold ml-2"
             >
-              삭제
+              &times;
             </button>
           </div>
         ))}
         <button
           onClick={handleAddIngredient}
-          className="bg-green-500 text-white rounded-md p-2 hover:bg-green-600"
+          className="bg-my-color2 text-white hover:text-black rounded-md p-2"
         >
           재료 추가
         </button>
@@ -166,7 +164,7 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
 
       {/* 태그 */}
       <div className="mb-4">
-        <h3 className="font-semibold mb-2 text-green-600">태그</h3>
+        <h3 className="font-semibold mb-2 text-black">태그</h3>
         {editedRecipe.tags.map((tag, index) => (
           <div key={index} className="flex items-center mb-2">
             <input
@@ -174,19 +172,19 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
               value={tag}
               onChange={(e) => handleTagChange(index, e.target.value)}
               placeholder={`태그 ${index + 1}`}
-              className="border border-green-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
             />
             <button
               onClick={() => handleDeleteTag(index)}
-              className="bg-red-500 text-white rounded-md p-2 ml-2 hover:bg-red-600 whitespace-nowrap"
+              className="text-my-color2 text-lg font-bold ml-2"
             >
-              삭제
+              &times;
             </button>
           </div>
         ))}
         <button
           onClick={handleAddTag}
-          className="bg-green-500 text-white rounded-md p-2 hover:bg-green-600"
+          className="bg-my-color2 text-white hover:text-black rounded-md p-2"
         >
           태그 추가
         </button>
@@ -194,29 +192,27 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
 
       {/* 조리 과정 */}
       <div className="mb-4">
-        <h3 className="font-semibold mb-2 text-green-600">조리 과정</h3>
+        <h3 className="font-semibold mb-2 text-black">조리 과정</h3>
         {editedRecipe.processes.map((process, index) => (
-          <div key={index} className="mb-2">
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={process}
-                onChange={(e) => handleProcessChange(index, e.target.value)}
-                placeholder={`조리 과정 ${index + 1}`}
-                className="border border-green-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
-              />
-              <button
-                onClick={() => handleDeleteProcess(index)}
-                className="bg-red-500 text-white rounded-md p-2 ml-2 hover:bg-red-600 whitespace-nowrap"
-              >
-                삭제
-              </button>
-            </div>
+          <div key={index} className="flex items-center mb-2">
+            <input
+              type="text"
+              value={process}
+              onChange={(e) => handleProcessChange(index, e.target.value)}
+              placeholder={`조리 과정 ${index + 1}`}
+              className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+            <button
+              onClick={() => handleDeleteProcess(index)}
+              className="text-my-color2 text-lg font-bold ml-2"
+            >
+              &times;
+            </button>
           </div>
         ))}
         <button
           onClick={handleAddProcess}
-          className="bg-green-500 text-white rounded-md p-2 hover:bg-green-600"
+          className="bg-my-color2 text-white hover:text-black rounded-md p-2"
         >
           조리 과정 추가
         </button>
@@ -225,13 +221,13 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
       <div className="flex justify-end mt-4">
         <button
           onClick={handleSave}
-          className="bg-blue-500 text-white rounded-md p-2 hover:bg-blue-600 mr-2"
+          className="bg-my-color2 hover:text-black text-white rounded-md p-2  mr-2"
         >
           저장
         </button>
         <button
           onClick={onClose}
-          className="bg-gray-500 text-white rounded-md p-2 hover:bg-gray-600"
+          className="bg-gray-500 text-white rounded-md p-2 hover:text-black"
         >
           닫기
         </button>

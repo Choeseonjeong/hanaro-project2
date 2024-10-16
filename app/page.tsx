@@ -6,7 +6,6 @@ import RecipeAdd from "./components/layout/RecipeAdd";
 import RecipeDetails from "./components/layout/RecipeDetail";
 import RecipeEditForm from "./components/layout/RecipeEdit";
 
-// Recipe 및 Version 인터페이스 정의
 interface Version {
   version: number;
   timestamp: string;
@@ -15,7 +14,7 @@ interface Version {
   ingredients: string[];
   processes: string[];
   timers: number[];
-  activeVersion?: boolean; // 선택적 속성으로 정의
+  activeVersion?: boolean;
 }
 
 interface Recipe {
@@ -24,7 +23,7 @@ interface Recipe {
   tags: string[];
   ingredients: string[];
   processes: string[];
-  timers: number[]; // 타이머 속성 추가
+  timers: number[];
   version: number;
   versionHistory: Version[];
 }
@@ -76,7 +75,7 @@ export default function Home() {
     tags: string[];
     ingredients: string[];
     processes: string[];
-    timers: number[]; // 타이머 추가
+    timers: number[];
   }) => {
     const updatedRecipes: Recipe[] = [
       ...recipes,
@@ -117,7 +116,7 @@ export default function Home() {
                 tags: recipe.tags,
                 ingredients: recipe.ingredients,
                 processes: recipe.processes,
-                timers: recipe.timers, // 타이머도 기록에 추가
+                timers: recipe.timers,
                 activeVersion: false,
               },
             ],
@@ -146,7 +145,7 @@ export default function Home() {
           tags: version.tags,
           ingredients: version.ingredients,
           processes: version.processes,
-          timers: version.timers, // 복원할 때 타이머도 포함
+          timers: version.timers,
           version: version.version,
         };
 
@@ -174,7 +173,6 @@ export default function Home() {
     setSelectedRecipe(null);
   };
 
-  // 삭제 기능 추가
   const handleDeleteRecipe = (recipeId: number) => {
     const updatedRecipes = recipes.filter((recipe) => recipe.id !== recipeId);
     setRecipes(updatedRecipes);
@@ -184,7 +182,7 @@ export default function Home() {
         JSON.stringify(updatedRecipes)
       );
     }
-    setSelectedRecipe(null); // 삭제 후 상세 보기 닫기
+    setSelectedRecipe(null);
   };
 
   return (
@@ -262,7 +260,7 @@ export default function Home() {
                           </span>
                         ))}
                         <button
-                          className="ml-auto rounded-lg text-sm bg-blue-500 text-white px-3 py-1"
+                          className="ml-auto rounded-lg text-sm bg-my-color2 text-white px-3 py-1 hover:text-black"
                           onClick={() => handleMore(recipe.id)}
                         >
                           더보기

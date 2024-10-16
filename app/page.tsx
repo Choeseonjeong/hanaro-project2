@@ -5,7 +5,7 @@ import Footer from "./components/layout/footer";
 import RecipeAdd from "./components/layout/RecipeAdd";
 import RecipeDetails from "./components/layout/RecipeDetail";
 import RecipeEditForm from "./components/layout/RecipeEdit";
-
+import { useSession } from "next-auth/react";
 interface Version {
   version: number;
   timestamp: string;
@@ -35,13 +35,29 @@ export default function Home() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isEditingRecipe, setIsEditingRecipe] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
+    if (status === "authenticated" && session?.user?.email) {
+      localStorage.setItem("loggedInUser", session.user.email);
+      console.log("세션 이메일이 저장되었습니다:", session.user.email);
+    } else {
+      console.log("세션이 없거나 로드 중입니다.");
+    }
+  }, [session, status]);
+  // 로그인 후 로컬 스토리지에서 이메일 가져오기
+  useEffect(() => {
     const storedUserEmail = localStorage.getItem("loggedInUser");
+    console.log("저장된 사용자 이메일:", storedUserEmail); // 콘솔에 출력
     if (storedUserEmail) {
       setUserEmail(storedUserEmail);
 
+      // 로컬 스토리지에서 해당 사용자의 레시피 목록 가져오기
       const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
+      console.log(
+        `저장된 레시피 목록 (recipes_${storedUserEmail}):`,
+        storedRecipes
+      ); // 콘솔에 출력
       if (storedRecipes) {
         const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
@@ -55,8 +71,7 @@ export default function Home() {
         setRecipes(activeRecipes);
       }
     }
-  }, []);
-
+  }, [userEmail]); // userEmail 값이 업데이트될 때마다 실행
   const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
@@ -90,6 +105,7 @@ export default function Home() {
         `selectedRecipe_${recipeId}`,
         JSON.stringify(selectedRecipe)
       );
+      console.log(`선택된 레시피 (recipe_${recipeId}):`, selectedRecipe); // 콘솔에 출력
     }
   };
 
@@ -114,6 +130,7 @@ export default function Home() {
       `recipes_${userEmail}`,
       JSON.stringify(updatedRecipes)
     );
+    console.log(`레시피 추가됨 (recipes_${userEmail}):`, updatedRecipes); // 콘솔에 출력
     setIsAddingRecipe(false);
   };
 
@@ -145,6 +162,7 @@ export default function Home() {
         `recipes_${userEmail}`,
         JSON.stringify(updatedRecipes)
       );
+      console.log(`레시피 수정됨 (recipes_${userEmail}):`, updatedRecipes); // 콘솔에 출력
     }
 
     setIsEditingRecipe(false);
@@ -183,6 +201,7 @@ export default function Home() {
         `recipes_${userEmail}`,
         JSON.stringify(updatedRecipes)
       );
+      console.log(`버전 복원됨 (recipes_${userEmail}):`, updatedRecipes); // 콘솔에 출력
     }
 
     setSelectedRecipe(null);
@@ -196,6 +215,7 @@ export default function Home() {
         `recipes_${userEmail}`,
         JSON.stringify(updatedRecipes)
       );
+      console.log(`레시피 삭제됨 (recipes_${userEmail}):`, updatedRecipes); // 콘솔에 출력
     }
     setSelectedRecipe(null);
   };
@@ -247,6 +267,10 @@ export default function Home() {
                       `recipes_${userEmail}`,
                       JSON.stringify(updatedRecipes)
                     );
+                    console.log(
+                      `레시피 닫기 후 저장됨 (recipes_${userEmail}):`,
+                      updatedRecipes
+                    ); // 콘솔에 출력
                   }
 
                   setSelectedRecipe(null);

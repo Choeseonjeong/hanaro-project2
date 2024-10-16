@@ -1,31 +1,67 @@
 "use client";
-
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const router = useRouter();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      localStorage.setItem("loggedInUser", session.user.email);
+      console.log(
+        "로그인한 사용자 이메일이 저장되었습니다:",
+        session.user.email
+      );
+
+      const storedUser = localStorage.getItem(`user_${session.user.email}`);
+      if (!storedUser) {
+        localStorage.setItem(
+          `user_${session.user.email}`,
+          JSON.stringify({
+            email: session.user.email,
+            name: session.user.name,
+            image: session.user.image,
+          })
+        );
+        alert("새 계정이 생성되었습니다!");
+      } else {
+        alert("로그인 성공!");
+      }
+      router.push("/");
+    }
+  }, [session, router]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const storedEmail = localStorage.getItem("email");
+    const storedEmail = localStorage.getItem(`user_${email}`);
     const storedPassword = localStorage.getItem("password");
 
-    if (email === storedEmail && password === storedPassword) {
+    if (!storedEmail) {
+      localStorage.setItem(
+        `user_${email}`,
+        JSON.stringify({ email, password })
+      );
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("loggedInUser", email);
-
+      console.log("사용자 이메일이 저장되었습니다:", email); // 콘솔에 출력
+      alert("로그인 성공!");
+      router.push("/");
+    } else if (email === storedEmail && password === storedPassword) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("loggedInUser", email);
+      console.log("로그인한 사용자 이메일이 저장되었습니다:", email); // 콘솔에 출력
       alert("로그인 성공!");
       router.push("/");
     } else {
-      alert("이메일 또는 비밀번호가 일치하지 않습니다.");
+      setErrorMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
     }
   };
 

@@ -27,47 +27,40 @@ export default function LoginButton() {
     router.push("/login");
   };
 
-  const handleSignInPage = () => {
-    router.push("/signin");
-  };
-
   const handleLocalSignOut = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("loggedInUser");
     setIsLocalLoggedIn(false);
     setIsLoggedIn(false);
     alert("로그아웃되었습니다.");
-    window.location.reload();
+    window.location.reload(); // 로그아웃 후 페이지 새로고침
+  };
+
+  const handleSignOut = () => {
+    if (session) {
+      signOut({ callbackUrl: "/" }); // 로그아웃 후 홈으로 리디렉션
+    } else {
+      handleLocalSignOut(); // 로컬 로그아웃 처리
+    }
   };
 
   if (isLoggedIn) {
     return (
-      <>
-        <button
-          className="text-gray-500 hover:text-black"
-          onClick={() => (session ? signOut() : handleLocalSignOut())}
-        >
-          Sign out
-        </button>
-      </>
+      <button
+        className="text-gray-500 hover:text-black"
+        onClick={handleSignOut}
+      >
+        Sign out
+      </button>
     );
   }
 
   return (
-    <>
-      <button
-        className="text-gray-400 font-bold text-sm"
-        onClick={handleLoginPage}
-      >
-        로그인
-      </button>
-      &nbsp;&nbsp;
-      <button
-        className="text-gray-400 font-bold text-sm"
-        onClick={handleSignInPage}
-      >
-        회원가입
-      </button>
-    </>
+    <button
+      className="text-gray-400 font-bold text-sm"
+      onClick={handleLoginPage}
+    >
+      로그인
+    </button>
   );
 }

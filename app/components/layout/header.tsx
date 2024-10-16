@@ -1,28 +1,38 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import LoginButton from "../ui/LoginButton";
-import { useSession } from "next-auth/react";
 
 export default function Header({
   onShowAddRecipe,
 }: {
   onShowAddRecipe: () => void;
 }) {
-  const { data: session } = useSession();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const loggedIn = session ? true : false;
-    setIsLoggedIn(loggedIn);
-  }, [session]);
+    // 로컬 스토리지에서 로그인 정보 확인
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (loggedInUser) {
+      setIsLoggedIn(true); // 로그인 되어 있으면 상태를 true로 설정
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
 
   const handleAddRecipe = () => {
-    if (isLoggedIn) {
-      onShowAddRecipe();
-    } else {
-      alert("로그인 해주세요.");
-    }
+    onShowAddRecipe(); // 로그인 여부와 상관없이 바로 레시피 추가
+  };
+
+  const handleLogout = () => {
+    // 로컬 스토리지에서 로그인 정보 제거
+    localStorage.removeItem("loggedInUser");
+
+    signOut({ callbackUrl: "/" });
+
+    // 상태 업데이트
+    setIsLoggedIn(false);
   };
 
   return (
@@ -38,7 +48,16 @@ export default function Header({
           >
             레시피 추가
           </button>
-          <LoginButton />
+          {isLoggedIn ? (
+            <button
+              className="text-gray-500 px-4 py-2 font-bold hover:text-red-500"
+              onClick={handleLogout}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <LoginButton />
+          )}
         </div>
       </header>
     </>

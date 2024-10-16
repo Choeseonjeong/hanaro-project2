@@ -36,28 +36,45 @@ export default function Home() {
   const [isEditingRecipe, setIsEditingRecipe] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState<Recipe | null>(null);
   const { data: session, status } = useSession();
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
+  // 페이지 로딩 시 항상 로컬 스토리지에서 이메일 가져오기
+  useEffect(() => {
+    const email = localStorage.getItem("loggedInUser");
+    if (email) {
+      console.log("localStorage에서 불러온 이메일:", email);
+      setUserEmail(email); // 이메일 상태 설정
+    } else {
+      console.error("로그인된 사용자의 이메일을 찾을 수 없습니다.");
+    }
+    setIsLoading(false); // 로딩 완료
+  }, []);
+
+  // 세션이 준비될 때 이메일 저장
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
-      // 세션 이메일을 로컬 스토리지에 저장
-      localStorage.setItem("loggedInUser", session.user.email);
-      console.log("세션 이메일이 저장되었습니다:", session.user.email);
+      const email = session.user.email;
+      console.log("세션에서 받은 이메일:", email);
 
-      // 세션 이메일이 저장된 후 사용자 이메일 상태 업데이트
-      setUserEmail(session.user.email);
+      localStorage.setItem("loggedInUser", email);
+      console.log(
+        "localStorage에 저장된 이메일:",
+        localStorage.getItem("loggedInUser")
+      );
+
+      setUserEmail(email);
     }
   }, [session, status]);
 
+  // 이메일에 해당하는 레시피 목록 가져오기
   useEffect(() => {
     if (userEmail) {
-      // 로컬 스토리지에서 해당 사용자의 레시피 목록 가져오기
       const storedRecipes = localStorage.getItem(`recipes_${userEmail}`);
       console.log(`저장된 레시피 목록 (recipes_${userEmail}):`, storedRecipes);
 
       if (storedRecipes) {
         const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
-        // Active version 처리
         const activeRecipes = allRecipes.map((recipe) => {
           const activeVersion = recipe.versionHistory?.find(
             (ver) => ver.activeVersion
@@ -68,7 +85,7 @@ export default function Home() {
         setRecipes(activeRecipes);
       }
     }
-  }, [userEmail]); // userEmail 값이 업데이트될 때만 실행
+  }, [userEmail]);
 
   const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
@@ -114,6 +131,13 @@ export default function Home() {
     processes: string[];
     timers: number[];
   }) => {
+    const email = localStorage.getItem("loggedInUser"); // 이메일 즉시 가져오기
+
+    if (!email) {
+      console.error("사용자 이메일이 설정되지 않았습니다.");
+      alert("로그인 후 다시 시도해 주세요.");
+      return; // 이메일이 없으면 추가 중단
+    }
     const updatedRecipes: Recipe[] = [
       ...recipes,
       {

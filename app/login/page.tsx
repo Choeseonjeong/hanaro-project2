@@ -41,27 +41,23 @@ export default function LoginPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const storedEmail = localStorage.getItem(`user_${email}`);
-    const storedPassword = localStorage.getItem("password");
-
-    if (!storedEmail) {
-      localStorage.setItem(
-        `user_${email}`,
-        JSON.stringify({ email, password })
-      );
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("loggedInUser", email);
-      console.log("사용자 이메일이 저장되었습니다:", email); // 콘솔에 출력
-      alert("로그인 성공!");
-      router.push("/");
-    } else if (email === storedEmail && password === storedPassword) {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("loggedInUser", email);
-      console.log("로그인한 사용자 이메일이 저장되었습니다:", email); // 콘솔에 출력
-      alert("로그인 성공!");
-      router.push("/");
+    // 로컬 스토리지에서 해당 이메일의 사용자 정보 가져오기
+    const storedUser = localStorage.getItem(`user_${email}`);
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser); // 저장된 사용자 정보 파싱
+      if (parsedUser.password === password) {
+        // 비밀번호가 일치하는 경우 로그인 성공 처리
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("loggedInUser", email);
+        console.log("로그인한 사용자 이메일이 저장되었습니다:", email);
+        alert("로그인 성공!");
+        router.replace("/");
+      } else {
+        setErrorMessage("비밀번호가 일치하지 않습니다."); // 비밀번호가 틀린 경우
+      }
     } else {
-      setErrorMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
+      // 해당 이메일로 저장된 사용자가 없는 경우
+      setErrorMessage("등록되지 않은 이메일입니다.");
     }
   };
 

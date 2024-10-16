@@ -26,7 +26,7 @@ interface Recipe {
   processes: string[];
   timers: number[]; // 타이머 속성 추가
   version: number;
-  versionHistory: Version[]; // versionHistory에 Version 타입을 적용
+  versionHistory: Version[];
 }
 
 export default function Home() {
@@ -174,6 +174,19 @@ export default function Home() {
     setSelectedRecipe(null);
   };
 
+  // 삭제 기능 추가
+  const handleDeleteRecipe = (recipeId: number) => {
+    const updatedRecipes = recipes.filter((recipe) => recipe.id !== recipeId);
+    setRecipes(updatedRecipes);
+    if (userEmail) {
+      localStorage.setItem(
+        `recipes_${userEmail}`,
+        JSON.stringify(updatedRecipes)
+      );
+    }
+    setSelectedRecipe(null); // 삭제 후 상세 보기 닫기
+  };
+
   return (
     <div
       className="bg-no-repeat"
@@ -208,6 +221,7 @@ export default function Home() {
                 onRestore={(recipeId, version) => {
                   handleRestoreVersion(recipeId, version);
                 }}
+                onDelete={(recipeId) => handleDeleteRecipe(recipeId)} // 삭제 핸들러 전달
                 onClose={(updatedRecipe) => {
                   const updatedRecipes = recipes.map((recipe) =>
                     recipe.id === updatedRecipe.id ? updatedRecipe : recipe

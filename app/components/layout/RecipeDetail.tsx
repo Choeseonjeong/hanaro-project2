@@ -1,4 +1,3 @@
-// components/RecipeDetails.tsx
 import React, { useState, useEffect } from "react";
 import RecipeEditForm from "./RecipeEdit";
 
@@ -35,12 +34,14 @@ interface RecipeDetailsProps {
   };
   onRestore: (recipeId: number, version: Version) => void;
   onClose: (updatedRecipe: Recipe) => void;
+  onDelete: (recipeId: number) => void; // 추가된 부분
 }
 
 const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   recipe,
   onRestore,
   onClose,
+  onDelete, // 추가된 부분
 }) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState(recipe);
@@ -49,11 +50,30 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   useEffect(() => {
     const savedRecipe = localStorage.getItem(`recipe_${recipe.id}`);
     if (savedRecipe) {
-      setEditedRecipe(JSON.parse(savedRecipe));
+      const parsedRecipe = JSON.parse(savedRecipe);
+
+      if (
+        !parsedRecipe.versionHistory ||
+        parsedRecipe.versionHistory.length === 0
+      ) {
+        const initialVersion: Version = {
+          version: 1,
+          timestamp: new Date().toISOString(),
+          title: parsedRecipe.title,
+          tags: parsedRecipe.tags,
+          ingredients: parsedRecipe.ingredients,
+          processes: parsedRecipe.processes,
+          timers: parsedRecipe.timers,
+          activeVersion: true,
+        };
+        parsedRecipe.versionHistory = [initialVersion];
+      }
+
+      setEditedRecipe(parsedRecipe);
     }
   }, [recipe.id]);
 
-  const saveToLocalStorage = (updatedRecipe: typeof recipe) => {
+  const saveToLocalStorage = (updatedRecipe: Recipe) => {
     localStorage.setItem(`recipe_${recipe.id}`, JSON.stringify(updatedRecipe));
   };
 
@@ -76,7 +96,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
     setEditMode(true);
   };
 
-  const handleSaveChanges = (updatedRecipe: typeof recipe) => {
+  const handleSaveChanges = (updatedRecipe: Recipe) => {
     setEditedRecipe(updatedRecipe);
     saveToLocalStorage(updatedRecipe);
     setEditMode(false);
@@ -102,6 +122,7 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 
   useEffect(() => {
     setTimers(editedRecipe.timers || []);
+    saveToLocalStorage(editedRecipe);
   }, [editedRecipe]);
 
   if (editMode) {
@@ -152,15 +173,13 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
             </span>
           ))}
         </div>
-        <h3 className="text-lg mb-4">버전: {editedRecipe.version}</h3>
 
         <div className="mb-4">
           <h3 className="text-lg mb-2">수정 기록</h3>
           {editedRecipe?.versionHistory?.map((ver, index) => (
             <div key={index} className="mb-2">
               <span className="mr-2">
-                버전 {ver.version} (수정일: {ver.timestamp}){" "}
-                {ver.activeVersion && "(현재 버전)"}
+                버전 {ver.version} (수정일: {ver.timestamp})
               </span>
               <button
                 onClick={() => handleRestore(ver)}
@@ -178,6 +197,12 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
             onClick={handleEdit}
           >
             수정
+          </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            onClick={() => onDelete(editedRecipe.id)} // 삭제 버튼 핸들러
+          >
+            삭제
           </button>
           <button
             className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"

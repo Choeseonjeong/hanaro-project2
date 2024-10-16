@@ -1,4 +1,3 @@
-// components/RecipeEditForm.tsx
 import React from "react";
 
 interface Recipe {
@@ -83,7 +82,6 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
     setEditedRecipe((prev) => ({
       ...prev,
       processes: [...prev.processes, ""],
-      timers: [...prev.timers, 0], // 새로운 과정 추가 시 기본 타이머 0초 설정
     }));
   };
 
@@ -97,36 +95,29 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
     const updatedProcesses = editedRecipe.processes.filter(
       (_, i) => i !== index
     );
-    const updatedTimers = editedRecipe.timers.filter((_, i) => i !== index); // 타이머도 함께 삭제
     setEditedRecipe({
       ...editedRecipe,
       processes: updatedProcesses,
-      timers: updatedTimers,
     });
-  };
-
-  // 타이머 설정 변경
-  const handleTimerChange = (index: number, value: string) => {
-    const updatedTimers = [...editedRecipe.timers];
-    updatedTimers[index] = parseInt(value) || 0; // 숫자로 변환, 숫자가 아니면 0으로 설정
-    setEditedRecipe({ ...editedRecipe, timers: updatedTimers });
   };
 
   // 버전 히스토리 로컬에 저장
   const handleSave = () => {
     const updatedRecipe = {
       ...editedRecipe,
-      version: editedRecipe.version + 1,
+      // versionHistory 배열의 길이를 기반으로 +1 값 설정
+      version: (editedRecipe.versionHistory?.length ?? 0) + 1,
       versionHistory: [
-        ...(editedRecipe.versionHistory ?? []), // versionHistory가 undefined인 경우 빈 배열로 초기화
+        ...(editedRecipe.versionHistory ?? []),
         {
-          version: editedRecipe.version,
+          // versionHistory 배열 인덱스를 기반으로 +1 값을 저장
+          version: (editedRecipe.versionHistory?.length ?? 0) + 1,
           timestamp: new Date().toISOString(),
           title: editedRecipe.title,
           tags: editedRecipe.tags,
           ingredients: editedRecipe.ingredients,
           processes: editedRecipe.processes,
-          timers: editedRecipe.timers, // 저장할 때 타이머 정보도 포함
+          timers: editedRecipe.timers,
         },
       ],
     };
@@ -221,13 +212,6 @@ const RecipeEditForm: React.FC<RecipeEditFormProps> = ({
                 삭제
               </button>
             </div>
-            <input
-              type="number"
-              value={editedRecipe.timers[index] || 0} // undefined일 경우 0으로 처리
-              onChange={(e) => handleTimerChange(index, e.target.value)}
-              placeholder="타이머 설정 (초)"
-              className="border border-blue-300 rounded-md p-2 w-full mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
           </div>
         ))}
         <button

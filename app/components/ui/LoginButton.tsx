@@ -5,23 +5,21 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function LoginButton() {
-  const { data: session, status } = useSession(); // 세션 정보와 상태 가져오기
+  const { data: session, status } = useSession();
   const [isLocalLoggedIn, setIsLocalLoggedIn] = useState<boolean>(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // 최종 로그인 상태
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
-    // 로컬 스토리지에서 로그인 상태 확인
     const localLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsLocalLoggedIn(localLoggedIn);
 
-    // 세션이 유효하거나 로컬 로그인이 되어 있으면 최종 로그인 상태를 true로 설정
     if (session || localLoggedIn) {
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);
     }
-  }, [session]); // 세션이 변경될 때마다 확인
+  }, [session]);
 
   const handleLoginPage = () => {
     router.push("/login");
@@ -30,10 +28,9 @@ export default function LoginButton() {
   const clearUserData = () => {
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (loggedInUser) {
-      console.log(`사용자 ${loggedInUser}의 데이터가 유지됩니다.`);
+      console.log(`사용자 ${loggedInUser}의 데이터가 유지`);
     }
 
-    // 로그인 상태 제거 (하지만 사용자의 데이터는 유지)
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("loggedInUser");
   };
@@ -43,24 +40,24 @@ export default function LoginButton() {
     setIsLocalLoggedIn(false);
     setIsLoggedIn(false);
     alert("로그아웃되었습니다.");
-    window.location.reload(); // 로그아웃 후 페이지 새로고침
+    window.location.reload();
   };
 
   const handleGoogleSignOut = async () => {
     try {
-      clearUserData(); // 로컬 스토리지 정리
-      await signOut({ callbackUrl: "/" }); // Google OAuth 세션 로그아웃
+      clearUserData();
+      await signOut({ callbackUrl: "/" });
       console.log("Google 로그아웃 완료");
     } catch (error) {
-      console.error("Google 로그아웃 중 오류가 발생했습니다:", error);
+      console.error("Google 로그아웃 중 오류가 발생:", error);
     }
   };
 
   const handleSignOut = () => {
     if (session) {
-      handleGoogleSignOut(); // Google OAuth 로그아웃 처리
+      handleGoogleSignOut();
     } else {
-      handleLocalSignOut(); // 로컬 로그아웃 처리
+      handleLocalSignOut();
     }
   };
 

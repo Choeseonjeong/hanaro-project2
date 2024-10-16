@@ -15,11 +15,6 @@ export default function LoginPage() {
   useEffect(() => {
     if (session?.user?.email) {
       localStorage.setItem("loggedInUser", session.user.email);
-      console.log(
-        "로그인한 사용자 이메일이 저장되었습니다:",
-        session.user.email
-      );
-
       const storedUser = localStorage.getItem(`user_${session.user.email}`);
       if (!storedUser) {
         localStorage.setItem(
@@ -41,22 +36,18 @@ export default function LoginPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // 로컬 스토리지에서 해당 이메일의 사용자 정보 가져오기
     const storedUser = localStorage.getItem(`user_${email}`);
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser); // 저장된 사용자 정보 파싱
+      const parsedUser = JSON.parse(storedUser);
       if (parsedUser.password === password) {
-        // 비밀번호가 일치하는 경우 로그인 성공 처리
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("loggedInUser", email);
-        console.log("로그인한 사용자 이메일이 저장되었습니다:", email);
         alert("로그인 성공!");
         router.replace("/");
       } else {
-        setErrorMessage("비밀번호가 일치하지 않습니다."); // 비밀번호가 틀린 경우
+        setErrorMessage("비밀번호가 일치하지 않습니다.");
       }
     } else {
-      // 해당 이메일로 저장된 사용자가 없는 경우
       setErrorMessage("등록되지 않은 이메일입니다.");
     }
   };

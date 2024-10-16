@@ -39,30 +39,27 @@ export default function Home() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.email) {
+      // 세션 이메일을 로컬 스토리지에 저장
       localStorage.setItem("loggedInUser", session.user.email);
       console.log("세션 이메일이 저장되었습니다:", session.user.email);
-    } else {
-      console.log("세션이 없거나 로드 중입니다.");
+
+      // 세션 이메일이 저장된 후 사용자 이메일 상태 업데이트
+      setUserEmail(session.user.email);
     }
   }, [session, status]);
-  // 로그인 후 로컬 스토리지에서 이메일 가져오기
-  useEffect(() => {
-    const storedUserEmail = localStorage.getItem("loggedInUser");
-    console.log("저장된 사용자 이메일:", storedUserEmail); // 콘솔에 출력
-    if (storedUserEmail) {
-      setUserEmail(storedUserEmail);
 
+  useEffect(() => {
+    if (userEmail) {
       // 로컬 스토리지에서 해당 사용자의 레시피 목록 가져오기
-      const storedRecipes = localStorage.getItem(`recipes_${storedUserEmail}`);
-      console.log(
-        `저장된 레시피 목록 (recipes_${storedUserEmail}):`,
-        storedRecipes
-      ); // 콘솔에 출력
+      const storedRecipes = localStorage.getItem(`recipes_${userEmail}`);
+      console.log(`저장된 레시피 목록 (recipes_${userEmail}):`, storedRecipes);
+
       if (storedRecipes) {
         const allRecipes: Recipe[] = JSON.parse(storedRecipes);
 
+        // Active version 처리
         const activeRecipes = allRecipes.map((recipe) => {
-          const activeVersion = recipe.versionHistory.find(
+          const activeVersion = recipe.versionHistory?.find(
             (ver) => ver.activeVersion
           );
           return activeVersion ? { ...recipe, ...activeVersion } : recipe;
@@ -71,7 +68,8 @@ export default function Home() {
         setRecipes(activeRecipes);
       }
     }
-  }, [userEmail]); // userEmail 값이 업데이트될 때마다 실행
+  }, [userEmail]); // userEmail 값이 업데이트될 때만 실행
+
   const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
@@ -81,7 +79,7 @@ export default function Home() {
 
       let selectedRecipe;
 
-      if (lastVersion) {
+      if (lastVersion && recipe.versionHistory?.length) {
         const versionToRestore = recipe.versionHistory.find(
           (ver) => ver.version === parseInt(lastVersion, 10)
         );
@@ -251,9 +249,9 @@ export default function Home() {
             <div className="bg-white rounded-lg p-6w-full">
               <RecipeDetails
                 recipe={selectedRecipe}
-                onRestore={(recipeId, version) => {
-                  handleRestoreVersion(recipeId, version);
-                }}
+                onRestore={(recipeId, version) =>
+                  handleRestoreVersion(recipeId, version)
+                }
                 onDelete={(recipeId) => handleDeleteRecipe(recipeId)}
                 onClose={(updatedRecipe) => {
                   const updatedRecipes = recipes.map((recipe) =>
@@ -261,7 +259,6 @@ export default function Home() {
                   );
 
                   setRecipes(updatedRecipes);
-
                   if (userEmail) {
                     localStorage.setItem(
                       `recipes_${userEmail}`,
@@ -270,45 +267,43 @@ export default function Home() {
                     console.log(
                       `레시피 닫기 후 저장됨 (recipes_${userEmail}):`,
                       updatedRecipes
-                    ); // 콘솔에 출력
+                    );
                   }
 
                   setSelectedRecipe(null);
                 }}
               />
             </div>
+          ) : recipes.length === 0 ? (
+            <p className="text-gray-500 font-bold">
+              레시피가 로드되지 않았습니다.
+            </p>
           ) : (
             <>
               <h2 className="text-2xl font-bold mb-4">Recipe List</h2>
-              {recipes.length === 0 ? (
-                <p className="text-gray-500 font-bold">
-                  추가된 레시피가 없습니다.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {recipes.map((recipe) => (
-                    <div key={recipe.id} className="border p-4 rounded shadow">
-                      <h2 className="text-xl font-semibold">{recipe.title}</h2>
-                      <div className="flex mt-2 gap-2">
-                        {recipe.tags.map((tag, tagIndex) => (
-                          <span
-                            key={tagIndex}
-                            className="bg-my-color text-gray-500 px-3 py-1 rounded-full"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                        <button
-                          className="ml-auto rounded-lg text-sm bg-my-color2 text-white px-3 py-1 hover:text-black"
-                          onClick={() => handleMore(recipe.id)}
+              <div className="space-y-4">
+                {recipes.map((recipe) => (
+                  <div key={recipe.id} className="border p-4 rounded shadow">
+                    <h2 className="text-xl font-semibold">{recipe.title}</h2>
+                    <div className="flex mt-2 gap-2">
+                      {recipe.tags.map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="bg-my-color text-gray-500 px-3 py-1 rounded-full"
                         >
-                          더보기
-                        </button>
-                      </div>
+                          #{tag}
+                        </span>
+                      ))}
+                      <button
+                        className="ml-auto rounded-lg text-sm bg-my-color2 text-white px-3 py-1 hover:text-black"
+                        onClick={() => handleMore(recipe.id)}
+                      >
+                        더보기
+                      </button>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </>
           )}
         </div>

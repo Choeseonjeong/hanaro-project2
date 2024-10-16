@@ -63,10 +63,18 @@ export default function Home() {
       const activeVersion = recipe.versionHistory.find(
         (ver) => ver.activeVersion
       );
+      // activeVersion이 없을 경우도 고려해서 기본 레시피로 설정
       const selectedRecipe = activeVersion
         ? { ...recipe, ...activeVersion }
         : recipe;
+
       setSelectedRecipe(selectedRecipe);
+
+      // 선택된 레시피를 localStorage에 저장하여 유지
+      localStorage.setItem(
+        `selectedRecipe_${recipeId}`,
+        JSON.stringify(selectedRecipe)
+      );
     }
   };
 
@@ -92,14 +100,6 @@ export default function Home() {
       JSON.stringify(updatedRecipes)
     );
     setIsAddingRecipe(false);
-  };
-
-  const handleEditRecipe = (recipeId: number) => {
-    const recipeToEdit = recipes.find((r) => r.id === recipeId);
-    if (recipeToEdit) {
-      setEditedRecipe(recipeToEdit);
-      setIsEditingRecipe(true);
-    }
   };
 
   const handleSaveEditedRecipe = (updatedRecipe: Recipe) => {

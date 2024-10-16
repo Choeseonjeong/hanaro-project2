@@ -34,14 +34,14 @@ interface RecipeDetailsProps {
   };
   onRestore: (recipeId: number, version: Version) => void;
   onClose: (updatedRecipe: Recipe) => void;
-  onDelete: (recipeId: number) => void; // 추가된 부분
+  onDelete: (recipeId: number) => void;
 }
 
 const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   recipe,
   onRestore,
   onClose,
-  onDelete, // 추가된 부분
+  onDelete,
 }) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editedRecipe, setEditedRecipe] = useState(recipe);
@@ -137,8 +137,11 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center">
-      <div className="bg-white p-6 max-w-lg mx-auto w-full max-w-3xl max-h-[800px] overflow-auto relative">
+    <div className=" inset-0 flex justify-center items-center">
+      <div
+        className="bg-white p-6 max-w-lg mx-auto w-full max-w-3xl overflow-auto"
+        style={{ maxHeight: "500px", scrollbarWidth: "none" }}
+      >
         <h1 className="text-2xl font-bold mb-4">{editedRecipe.title}</h1>
         <h2 className="text-xl mb-4">조리 과정</h2>
         <ul className="list-decimal list-inside mb-4">

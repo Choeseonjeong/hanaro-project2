@@ -215,13 +215,13 @@ export default function Home() {
               }}
             />
           ) : selectedRecipe ? (
-            <div className="bg-white rounded-lg p-6 shadow-lg w-full">
+            <div className="bg-white rounded-lg p-6w-full">
               <RecipeDetails
                 recipe={selectedRecipe}
                 onRestore={(recipeId, version) => {
                   handleRestoreVersion(recipeId, version);
                 }}
-                onDelete={(recipeId) => handleDeleteRecipe(recipeId)} // 삭제 핸들러 전달
+                onDelete={(recipeId) => handleDeleteRecipe(recipeId)}
                 onClose={(updatedRecipe) => {
                   const updatedRecipes = recipes.map((recipe) =>
                     recipe.id === updatedRecipe.id ? updatedRecipe : recipe

@@ -39,17 +39,28 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   const [timers, setTimers] = useState<number[]>(recipe.timers || []);
 
   useEffect(() => {
-    // 로컬 스토리지에서 마지막으로 복원된 버전 불러오기
-    const lastVersion = localStorage.getItem(`recipe_${recipe.id}_lastVersion`);
+    if (
+      !editedRecipe.versionHistory ||
+      editedRecipe.versionHistory.length === 0
+    ) {
+      const initialVersion: Version = {
+        version: 1,
+        timestamp: new Date().toISOString(),
+        title: editedRecipe.title,
+        tags: editedRecipe.tags,
+        ingredients: editedRecipe.ingredients,
+        processes: editedRecipe.processes,
+        timers: editedRecipe.timers,
+        activeVersion: true,
+      };
 
-    // 마지막 복원된 버전이 있으면 그 버전으로 복원
-    if (lastVersion) {
-      const versionToRestore = editedRecipe.versionHistory.find(
-        (ver) => ver.version === parseInt(lastVersion, 10)
-      );
-      if (versionToRestore) {
-        handleRestore(versionToRestore);
-      }
+      const updatedRecipe = {
+        ...editedRecipe,
+        versionHistory: [initialVersion],
+      };
+
+      setEditedRecipe(updatedRecipe);
+      saveToLocalStorage(updatedRecipe);
     }
   }, [editedRecipe]);
 
@@ -71,7 +82,6 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
     setTimers(version.timers);
     saveToLocalStorage(restoredRecipe);
 
-    // 복원된 버전을 로컬 스토리지에 저장
     localStorage.setItem(
       `recipe_${recipe.id}_lastVersion`,
       version.version.toString()
@@ -83,7 +93,6 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
   };
 
   const handleSaveChanges = (updatedRecipe: Recipe) => {
-    // 새로운 버전 기록 추가
     const newVersion: Version = {
       version: editedRecipe.versionHistory.length + 1,
       timestamp: new Date().toISOString(),
@@ -97,12 +106,12 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
 
     const updatedVersionHistory = editedRecipe.versionHistory.map((ver) => ({
       ...ver,
-      activeVersion: false, // 모든 이전 버전은 비활성화
+      activeVersion: false,
     }));
 
     const updatedRecipeWithVersion = {
       ...updatedRecipe,
-      versionHistory: [...updatedVersionHistory, newVersion], // 새로운 버전 추가
+      versionHistory: [...updatedVersionHistory, newVersion],
     };
 
     setEditedRecipe(updatedRecipeWithVersion);
@@ -183,7 +192,6 @@ const RecipeDetails: React.FC<RecipeDetailsProps> = ({
         <div className="mb-4">
           <h3 className="text-lg mb-2 font-bold">수정 기록</h3>
 
-          {/* Version History 렌더링 */}
           {editedRecipe?.versionHistory?.map((ver, index) => (
             <div key={index} className="mb-2">
               <span className="mr-2">

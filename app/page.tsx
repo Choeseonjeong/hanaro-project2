@@ -60,17 +60,32 @@ export default function Home() {
   const handleMore = (recipeId: number) => {
     const recipe = recipes.find((r) => r.id === recipeId);
     if (recipe) {
-      const activeVersion = recipe.versionHistory.find(
-        (ver) => ver.activeVersion
+      const lastVersion = localStorage.getItem(
+        `recipe_${recipeId}_lastVersion`
       );
-      // activeVersion이 없을 경우도 고려해서 기본 레시피로 설정
-      const selectedRecipe = activeVersion
-        ? { ...recipe, ...activeVersion }
-        : recipe;
+
+      let selectedRecipe;
+
+      if (lastVersion) {
+        const versionToRestore = recipe.versionHistory.find(
+          (ver) => ver.version === parseInt(lastVersion, 10)
+        );
+        if (versionToRestore) {
+          selectedRecipe = { ...recipe, ...versionToRestore };
+        } else {
+          selectedRecipe = recipe;
+        }
+      } else {
+        const activeVersion = recipe.versionHistory.find(
+          (ver) => ver.activeVersion
+        );
+        selectedRecipe = activeVersion
+          ? { ...recipe, ...activeVersion }
+          : recipe;
+      }
 
       setSelectedRecipe(selectedRecipe);
 
-      // 선택된 레시피를 localStorage에 저장하여 유지
       localStorage.setItem(
         `selectedRecipe_${recipeId}`,
         JSON.stringify(selectedRecipe)

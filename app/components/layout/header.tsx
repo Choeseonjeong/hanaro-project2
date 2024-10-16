@@ -2,18 +2,20 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoginButton from "../ui/LoginButton";
+import { useSession } from "next-auth/react";
 
 export default function Header({
   onShowAddRecipe,
 }: {
   onShowAddRecipe: () => void;
 }) {
+  const { data: session } = useSession();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const loggedIn = session ? true : false;
     setIsLoggedIn(loggedIn);
-  }, []);
+  }, [session]);
 
   const handleAddRecipe = () => {
     if (isLoggedIn) {

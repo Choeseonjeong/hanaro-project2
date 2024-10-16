@@ -279,9 +279,7 @@ export default function Home() {
               />
             </div>
           ) : recipes.length === 0 ? (
-            <p className="text-gray-500 font-bold">
-              레시피가 로드되지 않았습니다.
-            </p>
+            <p className="text-gray-500 font-bold">레시피가 없습니다.</p>
           ) : (
             <>
               <h2 className="text-2xl font-bold mb-4">Recipe List</h2>
